@@ -27,6 +27,7 @@ func main() {
 	http.HandleFunc("/generate-ssh-key", handlers.GenerateSSHKeyHandler)
 	http.HandleFunc("/view/", handlers.ViewEncryptedHandler)
 	http.HandleFunc("/view-file/", handlers.ViewEncryptedFileHandler)
+	http.HandleFunc("/contact", handlers.HandleContact)
 	http.HandleFunc("/static/", handlers.StaticHandler)
 
 	log.Println("ZeePass server starting on :8080")

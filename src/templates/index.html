@@ -490,32 +490,35 @@
 
                     <div class="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <form class="space-y-4">
+                            <form action="/contact" method="POST" class="space-y-4">
                                 <div class="grid md:grid-cols-2 gap-4">
                                     <div>
-                                        <input type="text" placeholder="Name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                        <input type="text" name="name" placeholder="Name" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
                                     </div>
                                     <div>
-                                        <input type="email" placeholder="Email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                        <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
                                     </div>
                                 </div>
                                 <div>
-                                    <input type="text" placeholder="Company Name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                    <input type="text" name="company" placeholder="Company Name (optional)" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
                                 </div>
                                 <div>
-                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
-                                        <option value="">Preferred Deployment Option</option>
-                                        <option value="cloud">Cloud Hosted (yourcompany.zeepass.com)</option>
+                                    <select name="inquiry_type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                        <option value="">What can we help you with?</option>
+                                        <option value="cloud">Cloud Hosting Setup</option>
                                         <option value="onpremise">On-Premise Installation</option>
-                                        <option value="hybrid">Hybrid Solution</option>
-                                        <option value="consultation">Need Consultation</option>
+                                        <option value="support">Technical Support</option>
+                                        <option value="consultation">Consultation & Planning</option>
+                                        <option value="custom">Custom Development</option>
+                                        <option value="question">General Question</option>
+                                        <option value="other">Other</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <textarea rows="4" placeholder="Tell us about your requirements, expected users, and timeline..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"></textarea>
+                                    <textarea name="message" rows="4" placeholder="Tell us about your needs, ask questions, or share your requirements..." required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"></textarea>
                                 </div>
                                 <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-                                    Get Custom Quote
+                                    Send Message
                                 </button>
                             </form>
                             
