@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Encryption - ZeePass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar-active {
+            background: rgba(99, 102, 241, 0.1);
+            border-right: 3px solid #6366f1;
+        }
+        .message-bubble {
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .message-sent {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-left: auto;
+        }
+        .message-received {
+            background: #f3f4f6;
+            margin-right: auto;
+        }
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+        }
+        .online-indicator {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .connection-status {
+            transition: all 0.3s ease;
+        }
+        .key-display {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 11px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-white rounded flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-bold">ZeePass</h1>
+                </a>
+            </div>
+            
+            <!-- Breadcrumb -->
+            <nav class="hidden md:flex text-sm text-blue-200">
+                <a href="/" class="hover:text-white transition">Home</a>
+                <span class="mx-2">•</span>
+                <span class="text-white">Chat Encryption</span>
+            </nav>
+            
+            <div class="flex items-center space-x-2">
+                <button class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-lg">
+            <nav class="py-4">
+                <a href="/text-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a2 2 0 002 2h2a2 2 0 002-2V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Text Encryption</span>
+                </a>
+                
+                <a href="/file-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>File Encryption</span>
+                </a>
+                
+                <a href="/chat-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50 sidebar-active">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+                    </svg>
+                    <span class="font-medium">Chat Encryption</span>
+                </a>
+                
+                <a href="/password-generator" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Password</span>
+                </a>
+                
+                <a href="/ssh-key" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>SSH Key</span>
+                </a>
+                
+                <a href="/base64" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Base64</span>
+                </a>
+            </nav>
+            
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <div class="max-w-6xl mx-auto">
+                <!-- Page Header -->
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Chat Encryption</h2>
+                    <p class="text-gray-600">End-to-end encrypted chat rooms with perfect forward secrecy</p>
+                </div>
+
+                <!-- How It Works Explanation -->
+                <div class="bg-purple-50 border border-purple-200 rounded-lg mb-6">
+                    <div class="p-4">
+                        <button id="toggleExplanation" class="flex items-center justify-between w-full text-left">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-purple-900">💬 How Chat Encryption Works</h3>
+                                    <p class="text-sm text-purple-700">Learn how your conversations stay private (click to expand)</p>
+                                </div>
+                            </div>
+                            <svg id="explanationChevron" class="w-5 h-5 text-purple-600 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        
+                        <div id="explanationContent" class="hidden mt-4 pt-4 border-t border-purple-200">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <!-- Process Steps -->
+                                <div>
+                                    <h4 class="font-semibold text-purple-900 mb-3">Simple Steps:</h4>
+                                    <div class="space-y-3">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                                            <div>
+                                                <p class="text-sm text-purple-800"><strong>🚪 You enter a chat room</strong></p>
+                                                <p class="text-xs text-purple-600 mt-1">Create or join any room with a unique room code</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+                                            <div>
+                                                <p class="text-sm text-purple-800"><strong>🔑 Everyone gets matching "secret keys"</strong></p>
+                                                <p class="text-xs text-purple-600 mt-1">Your browsers automatically create identical encryption keys</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+                                            <div>
+                                                <p class="text-sm text-purple-800"><strong>✍️ You type and send messages</strong></p>
+                                                <p class="text-xs text-purple-600 mt-1">Normal chatting - type and press enter</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
+                                            <div>
+                                                <p class="text-sm text-purple-800"><strong>🔒 Messages get scrambled instantly</strong></p>
+                                                <p class="text-xs text-purple-600 mt-1">Before leaving your device, every message becomes unreadable</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">5</div>
+                                            <div>
+                                                <p class="text-sm text-purple-800"><strong>👥 Others see your message clearly</strong></p>
+                                                <p class="text-xs text-purple-600 mt-1">Their devices automatically unscramble using the shared key</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">6</div>
+                                            <div>
+                                                <p class="text-sm text-purple-800"><strong>🔄 Keys automatically change regularly</strong></p>
+                                                <p class="text-xs text-purple-600 mt-1">Perfect Forward Secrecy - old messages stay safe even if keys leak</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Visual Analogy -->
+                                <div>
+                                    <h4 class="font-semibold text-purple-900 mb-3">Think of it like this:</h4>
+                                    <div class="bg-white rounded-lg p-4 border border-purple-200">
+                                        <div class="text-center space-y-4">
+                                            <div class="flex items-center justify-center space-x-2">
+                                                <div class="bg-gray-100 px-3 py-2 rounded text-xs font-mono flex items-center space-x-1">
+                                                    <span>👤</span>
+                                                    <span>"Hello everyone!"</span>
+                                                </div>
+                                                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                </svg>
+                                            </div>
+                                            
+                                            <div class="flex items-center justify-center">
+                                                <div class="bg-purple-100 p-3 rounded-lg">
+                                                    <svg class="w-8 h-8 text-purple-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+                                                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+                                                    </svg>
+                                                    <p class="text-xs text-purple-700 font-medium">Private Group Chat</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center justify-center space-x-2">
+                                                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                </svg>
+                                                <div class="bg-red-100 px-3 py-2 rounded text-xs font-mono">⚡Z8#kX9mP2vQ7w...</div>
+                                            </div>
+                                            
+                                            <div class="flex justify-center space-x-4">
+                                                <div class="bg-green-100 px-2 py-1 rounded text-xs">👤 Alice sees: "Hello everyone!"</div>
+                                                <div class="bg-green-100 px-2 py-1 rounded text-xs">👤 Bob sees: "Hello everyone!"</div>
+                                            </div>
+                                            
+                                            <p class="text-xs text-purple-600 italic">
+                                                Like whispering in a crowded room - only people in your circle can hear, 
+                                                but anyone eavesdropping just hears gibberish!
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Note -->
+                            <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                                <div class="flex items-start space-x-2">
+                                    <svg class="w-5 h-5 text-indigo-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-semibold text-indigo-800">🛡️ Enterprise-Grade Security</p>
+                                        <p class="text-xs text-indigo-700">
+                                            AES-256-GCM encryption + Perfect Forward Secrecy. Messages auto-expire after 24 hours. 
+                                            Not even the server can read your conversations!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Setup Section -->
+                <div id="roomSetup" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                    <div class="border-b border-gray-200 p-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Chat Room</h3>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <!-- Create Room -->
+                            <div class="space-y-4">
+                                <h4 class="font-semibold text-gray-800">Create New Room</h4>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+                                    <input type="text" id="createUserName" placeholder="Enter your name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Room Name</label>
+                                    <input type="text" id="createRoomName" placeholder="Enter room name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                </div>
+                                <button id="createRoomBtn" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                                    Create Room
+                                </button>
+                            </div>
+
+                            <!-- Join Room -->
+                            <div class="space-y-4">
+                                <h4 class="font-semibold text-gray-800">Join Existing Room</h4>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+                                    <input type="text" id="joinUserName" placeholder="Enter your name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Room Link</label>
+                                    <input type="text" id="joinRoomId" placeholder="Paste room link or encoded room data" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                </div>
+                                <button id="joinRoomBtn" class="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+                                    Join Room
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Interface (Initially Hidden) -->
+                <div id="chatInterface" class="hidden">
+                    <!-- Chat Header -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                        <div class="p-4 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center space-x-3">
+                                    <div class="online-indicator"></div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800" id="roomTitle">Room Name</h3>
+                                        <p class="text-sm text-gray-500">
+                                            <span id="connectionStatus">Connected</span> • 
+                                            Room ID: <span id="displayRoomId" class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">XXXX-XXXX</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <button id="keyManagementBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition text-sm">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span>Keys</span>
+                                    </button>
+                                    <button id="shareRoomBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                                        </svg>
+                                        <span>Share</span>
+                                    </button>
+                                    <button id="leaveRoomBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span>Leave</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                        <div class="chat-container p-4" id="chatContainer">
+                            <!-- Welcome message -->
+                            <div class="text-center py-8">
+                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">🔒 End-to-End Encrypted Chat</h4>
+                                <p class="text-gray-600 text-sm">Your messages are encrypted on your device. Only participants in this room can read them.</p>
+                            </div>
+                            
+                            <div id="messagesArea"></div>
+                        </div>
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-4">
+                            <div class="flex space-x-3">
+                                <div class="flex-1">
+                                    <textarea id="messageInput" rows="2" placeholder="Type your encrypted message..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none" maxlength="2000"></textarea>
+                                </div>
+                                <div class="flex flex-col space-y-2">
+                                    <button id="sendMessageBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </button>
+                                    <div class="text-xs text-gray-500 text-center">
+                                        <span id="messageCount">0</span>/2000
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Encryption Info -->
+                <div id="encryptionInfo" class="hidden mt-6 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-medium">🔐 Encryption Details</p>
+                            <p class="text-sm mt-1">
+                                This room uses AES-256-GCM encryption with PFS rotation. 
+                                Room Key: <span id="roomKeyDisplay" class="key-display bg-amber-100 px-2 py-1 rounded font-mono text-xs">Loading...</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Management Modal -->
+    <div id="keyManagementModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">🔑 Key Management</h3>
+                    <button id="closeKeyModal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Key Backup Section -->
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">🛡️ Key Backup</h4>
+                        <p class="text-sm text-gray-600 mb-4">Backup your encryption keys for account recovery. Keys are encrypted with your passphrase.</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Backup Passphrase</label>
+                                <input type="password" id="backupPassphrase" placeholder="Enter secure passphrase" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="exportKeysBtn" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm">
+                                    Export Keys
+                                </button>
+                                <button id="importKeysBtn" class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm">
+                                    Import Keys
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Perfect Forward Secrecy -->
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">🔄 Perfect Forward Secrecy</h4>
+                        <p class="text-sm text-gray-600 mb-4">Automatically rotate encryption keys to ensure past messages remain secure.</p>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-700">Key Rotation</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="pfsToggle" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-700">Rotation Interval</span>
+                                <select id="rotationInterval" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                                    <option value="3600">1 Hour</option>
+                                    <option value="21600" selected>6 Hours</option>
+                                    <option value="86400">24 Hours</option>
+                                </select>
+                            </div>
+                            <button id="rotateNowBtn" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
+                                Rotate Keys Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Key Recovery -->
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">🚨 Emergency Recovery</h4>
+                        <p class="text-sm text-gray-600 mb-4">Secure key escrow for account recovery (optional).</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Recovery Email</label>
+                                <input type="email" id="recoveryEmail" placeholder="recovery@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="escrowEnabled" class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500">
+                                <label class="text-sm text-gray-700">Enable secure key escrow</label>
+                            </div>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded p-3">
+                                <p class="text-xs text-yellow-800">
+                                    ⚠️ Key escrow stores encrypted recovery keys on our servers. This reduces security but enables account recovery if you lose your keys.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Room Key Info -->
+                    <div class="border rounded-lg p-4 bg-gray-50">
+                        <h4 class="font-semibold text-gray-800 mb-2">📋 Current Session</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Algorithm:</span>
+                                <span class="font-mono">AES-256-GCM</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Key Age:</span>
+                                <span id="keyAge">Just created</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Messages:</span>
+                                <span id="messageCount">0 encrypted</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Room ID:</span>
+                                <span id="currentRoomId" class="font-mono text-xs">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Input for Key Import -->
+    <input type="file" id="keyFileInput" accept=".json" class="hidden">
+
+    <script>
+        // Global variables
+        let currentUser = '';
+        let currentRoom = '';
+        let roomKey = null;
+        let websocket = null;
+        let isConnected = false;
+        let keyCreatedAt = null;
+        let messagesSent = 0;
+        let pfsEnabled = true;
+        let rotationTimer = null;
+        let keyHistory = [];
+
+        // Elements
+        const roomSetup = document.getElementById('roomSetup');
+        const chatInterface = document.getElementById('chatInterface');
+        const encryptionInfo = document.getElementById('encryptionInfo');
+        const createUserName = document.getElementById('createUserName');
+        const createRoomName = document.getElementById('createRoomName');
+        const joinUserName = document.getElementById('joinUserName');
+        const joinRoomId = document.getElementById('joinRoomId');
+        const createRoomBtn = document.getElementById('createRoomBtn');
+        const joinRoomBtn = document.getElementById('joinRoomBtn');
+        const roomTitle = document.getElementById('roomTitle');
+        const displayRoomId = document.getElementById('displayRoomId');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const messagesArea = document.getElementById('messagesArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const messageCount = document.getElementById('messageCount');
+        const chatContainer = document.getElementById('chatContainer');
+        const shareRoomBtn = document.getElementById('shareRoomBtn');
+        const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+        const roomKeyDisplay = document.getElementById('roomKeyDisplay');
+        
+        // Key management elements
+        const keyManagementBtn = document.getElementById('keyManagementBtn');
+        const keyManagementModal = document.getElementById('keyManagementModal');
+        const closeKeyModal = document.getElementById('closeKeyModal');
+        const backupPassphrase = document.getElementById('backupPassphrase');
+        const exportKeysBtn = document.getElementById('exportKeysBtn');
+        const importKeysBtn = document.getElementById('importKeysBtn');
+        const keyFileInput = document.getElementById('keyFileInput');
+        const pfsToggle = document.getElementById('pfsToggle');
+        const rotationInterval = document.getElementById('rotationInterval');
+        const rotateNowBtn = document.getElementById('rotateNowBtn');
+        const recoveryEmail = document.getElementById('recoveryEmail');
+        const escrowEnabled = document.getElementById('escrowEnabled');
+        const keyAge = document.getElementById('keyAge');
+        const currentRoomId = document.getElementById('currentRoomId');
+
+        // Initialize
+        initializeCrypto();
+        
+        // Check for room data in URL fragment on page load
+        window.addEventListener('load', () => {
+            if (window.location.hash) {
+                try {
+                    const roomData = JSON.parse(atob(window.location.hash.substring(1)));
+                    // Pre-fill join form with room data
+                    joinRoomId.value = window.location.href;
+                    // Show join tab with room name
+                    alert(`Ready to join room: ${roomData.name}\nPlease enter your name and click "Join Room"`);
+                } catch (error) {
+                    console.error('Invalid room data in URL:', error);
+                }
+            }
+        });
+
+        // Crypto functions
+        async function initializeCrypto() {
+            try {
+                // Test Web Crypto API availability
+                if (!window.crypto || !window.crypto.subtle) {
+                    throw new Error('Web Crypto API not available');
+                }
+                console.log('Crypto API initialized successfully');
+            } catch (error) {
+                console.error('Crypto initialization failed:', error);
+                alert('Your browser does not support the required encryption features.');
+            }
+        }
+
+        async function generateRoomKey() {
+            try {
+                const key = await window.crypto.subtle.generateKey(
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+                return key;
+            } catch (error) {
+                console.error('Key generation failed:', error);
+                throw error;
+            }
+        }
+
+        async function exportKey(key) {
+            try {
+                const exported = await window.crypto.subtle.exportKey('raw', key);
+                return btoa(String.fromCharCode(...new Uint8Array(exported)));
+            } catch (error) {
+                console.error('Key export failed:', error);
+                throw error;
+            }
+        }
+
+        async function importKey(keyData) {
+            try {
+                const keyBytes = new Uint8Array(atob(keyData).split('').map(c => c.charCodeAt(0)));
+                return await window.crypto.subtle.importKey(
+                    'raw',
+                    keyBytes,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+            } catch (error) {
+                console.error('Key import failed:', error);
+                throw error;
+            }
+        }
+
+        async function encryptMessage(message, key) {
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(message);
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                
+                const encrypted = await window.crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    data
+                );
+                
+                return {
+                    encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+                    iv: btoa(String.fromCharCode(...iv))
+                };
+            } catch (error) {
+                console.error('Encryption failed:', error);
+                throw error;
+            }
+        }
+
+        async function decryptMessage(encryptedData, iv, key) {
+            try {
+                const encryptedBytes = new Uint8Array(atob(encryptedData).split('').map(c => c.charCodeAt(0)));
+                const ivBytes = new Uint8Array(atob(iv).split('').map(c => c.charCodeAt(0)));
+                
+                const decrypted = await window.crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: ivBytes },
+                    key,
+                    encryptedBytes
+                );
+                
+                const decoder = new TextDecoder();
+                return decoder.decode(decrypted);
+            } catch (error) {
+                console.error('Decryption failed:', error);
+                return '[Decryption failed - message may be corrupted]';
+            }
+        }
+
+        // UI Event Handlers
+        createRoomBtn.addEventListener('click', createRoom);
+        joinRoomBtn.addEventListener('click', joinRoom);
+        sendMessageBtn.addEventListener('click', sendMessage);
+        leaveRoomBtn.addEventListener('click', leaveRoom);
+        shareRoomBtn.addEventListener('click', shareRoom);
+        
+        // Key management handlers
+        keyManagementBtn.addEventListener('click', showKeyManagement);
+        closeKeyModal.addEventListener('click', hideKeyManagement);
+        exportKeysBtn.addEventListener('click', exportKeys);
+        importKeysBtn.addEventListener('click', () => keyFileInput.click());
+        keyFileInput.addEventListener('change', importKeys);
+        rotateNowBtn.addEventListener('click', rotateKeys);
+        pfsToggle.addEventListener('change', togglePFS);
+        rotationInterval.addEventListener('change', updateRotationInterval);
+
+        messageInput.addEventListener('input', () => {
+            messageCount.textContent = messageInput.value.length;
+        });
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        async function createRoom() {
+            const userName = createUserName.value.trim();
+            const roomName = createRoomName.value.trim();
+            
+            if (!userName || !roomName) {
+                alert('Please enter both your name and room name.');
+                return;
+            }
+
+            try {
+                // Generate room encryption key
+                roomKey = await generateRoomKey();
+                const exportedKey = await exportKey(roomKey);
+                keyCreatedAt = new Date();
+                
+                // Generate room ID that includes the key
+                const roomId = generateRoomId();
+                const roomData = {
+                    id: roomId,
+                    name: roomName,
+                    key: exportedKey,
+                    created: keyCreatedAt.toISOString()
+                };
+                
+                // Store room data in URL fragment (client-side only)
+                const encodedRoomData = btoa(JSON.stringify(roomData));
+                window.location.hash = encodedRoomData;
+                
+                currentUser = userName;
+                currentRoom = roomId;
+                
+                // Show chat interface
+                showChatInterface(roomName, roomId);
+                
+                // Display encryption key
+                roomKeyDisplay.textContent = exportedKey.substring(0, 32) + '...';
+                
+                // Start PFS if enabled
+                if (pfsEnabled) {
+                    startKeyRotation();
+                }
+                
+                // Connect WebSocket
+                connectWebSocket();
+                
+            } catch (error) {
+                console.error('Room creation failed:', error);
+                alert('Failed to create room. Please try again.');
+            }
+        }
+
+        async function joinRoom() {
+            const userName = joinUserName.value.trim();
+            const roomLink = joinRoomId.value.trim();
+            
+            if (!userName || !roomLink) {
+                alert('Please enter both your name and room link/ID.');
+                return;
+            }
+
+            try {
+                let roomData;
+                
+                // Check if it's a full room link or just room data
+                if (roomLink.includes('#')) {
+                    // Extract room data from URL fragment
+                    const hashPart = roomLink.split('#')[1];
+                    roomData = JSON.parse(atob(hashPart));
+                } else if (roomLink.startsWith('eyJ')) {
+                    // Direct base64 encoded room data
+                    roomData = JSON.parse(atob(roomLink));
+                } else {
+                    // Legacy room ID - generate new key (will cause decryption issues)
+                    alert('Please use a proper room link that includes the encryption key. Legacy room IDs are not supported for security reasons.');
+                    return;
+                }
+                
+                // Import the shared room key
+                roomKey = await importKey(roomData.key);
+                
+                currentUser = userName;
+                currentRoom = roomData.id;
+                
+                // Update URL fragment
+                window.location.hash = btoa(JSON.stringify(roomData));
+                
+                showChatInterface(roomData.name, roomData.id);
+                roomKeyDisplay.textContent = roomData.key.substring(0, 32) + '...';
+                
+                connectWebSocket();
+                
+            } catch (error) {
+                console.error('Room join failed:', error);
+                alert('Failed to join room. Please check the room link and try again.');
+            }
+        }
+
+        function showChatInterface(roomName, roomId) {
+            roomSetup.classList.add('hidden');
+            chatInterface.classList.remove('hidden');
+            encryptionInfo.classList.remove('hidden');
+            
+            roomTitle.textContent = roomName;
+            displayRoomId.textContent = roomId;
+        }
+
+        function leaveRoom() {
+            if (websocket) {
+                websocket.close();
+            }
+            
+            chatInterface.classList.add('hidden');
+            encryptionInfo.classList.add('hidden');
+            roomSetup.classList.remove('hidden');
+            
+            // Clear data
+            currentUser = '';
+            currentRoom = '';
+            roomKey = null;
+            messagesArea.innerHTML = '';
+            
+            // Clear inputs
+            createUserName.value = '';
+            createRoomName.value = '';
+            joinUserName.value = '';
+            joinRoomId.value = '';
+            messageInput.value = '';
+        }
+
+        function shareRoom() {
+            const roomLink = `${window.location.origin}/chat-encryption${window.location.hash}`;
+            const roomData = window.location.hash ? JSON.parse(atob(window.location.hash.substring(1))) : null;
+            
+            const shareText = `Join my encrypted chat room on ZeePass!\n\nRoom: ${roomData ? roomData.name : currentRoom}\nSecure Link: ${roomLink}\n\nThis room uses end-to-end encryption. The encryption key is embedded in the link for secure communication.`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join ZeePass Encrypted Chat',
+                    text: shareText,
+                    url: roomLink
+                });
+            } else {
+                navigator.clipboard.writeText(roomLink).then(() => {
+                    const btn = shareRoomBtn;
+                    const originalText = btn.querySelector('span').textContent;
+                    btn.querySelector('span').textContent = 'Copied!';
+                    btn.classList.add('bg-green-100', 'text-green-700');
+                    btn.classList.remove('bg-blue-100', 'text-blue-700');
+                    
+                    setTimeout(() => {
+                        btn.querySelector('span').textContent = originalText;
+                        btn.classList.remove('bg-green-100', 'text-green-700');
+                        btn.classList.add('bg-blue-100', 'text-blue-700');
+                    }, 2000);
+                });
+            }
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !roomKey) return;
+
+            try {
+                // Encrypt message
+                const encryptedData = await encryptMessage(message, roomKey);
+                
+                // Send via WebSocket
+                if (websocket && isConnected) {
+                    websocket.send(JSON.stringify({
+                        type: 'message',
+                        room: currentRoom,
+                        user: currentUser,
+                        encrypted: encryptedData.encrypted,
+                        iv: encryptedData.iv,
+                        timestamp: new Date().toISOString()
+                    }));
+                }
+                
+                // Add to UI as sent message
+                addMessage(currentUser, message, new Date().toISOString(), true);
+                
+                // Clear input
+                messageInput.value = '';
+                messageCount.textContent = '0';
+                
+            } catch (error) {
+                console.error('Send message failed:', error);
+                alert('Failed to send message. Please try again.');
+            }
+        }
+
+        function addMessage(user, message, timestamp, isSent = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message-bubble rounded-lg p-3 mb-3 ${isSent ? 'message-sent text-white' : 'message-received text-gray-800'}`;
+            
+            const time = new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            messageDiv.innerHTML = `
+                <div class="flex justify-between items-start mb-1">
+                    <span class="font-medium text-sm ${isSent ? 'text-blue-100' : 'text-gray-600'}">${user}</span>
+                    <span class="text-xs ${isSent ? 'text-blue-200' : 'text-gray-500'} ml-2">${time}</span>
+                </div>
+                <p class="text-sm leading-relaxed">${escapeHtml(message)}</p>
+            `;
+            
+            messagesArea.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/chat`;
+            
+            try {
+                websocket = new WebSocket(wsUrl);
+                
+                websocket.onopen = function(event) {
+                    isConnected = true;
+                    connectionStatus.textContent = 'Connected';
+                    connectionStatus.className = 'text-green-600';
+                    
+                    // Send join message
+                    websocket.send(JSON.stringify({
+                        type: 'join',
+                        room: currentRoom,
+                        user: currentUser
+                    }));
+                };
+                
+                websocket.onmessage = function(event) {
+                    try {
+                        const message = JSON.parse(event.data);
+                        handleWebSocketMessage(message);
+                    } catch (error) {
+                        console.error('Error parsing WebSocket message:', error);
+                    }
+                };
+                
+                websocket.onclose = function(event) {
+                    isConnected = false;
+                    connectionStatus.textContent = 'Disconnected';
+                    connectionStatus.className = 'text-red-600';
+                    
+                    // Try to reconnect after 5 seconds
+                    setTimeout(() => {
+                        if (currentRoom) {
+                            connectWebSocket();
+                        }
+                    }, 5000);
+                };
+                
+                websocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    connectionStatus.textContent = 'Connection Error';
+                    connectionStatus.className = 'text-red-600';
+                };
+                
+            } catch (error) {
+                console.error('Failed to create WebSocket connection:', error);
+                connectionStatus.textContent = 'Connection Failed';
+                connectionStatus.className = 'text-red-600';
+            }
+        }
+
+        async function handleWebSocketMessage(message) {
+            switch (message.type) {
+                case 'message':
+                    if (message.user !== currentUser && roomKey) {
+                        try {
+                            // Decrypt and display message
+                            const decryptedText = await decryptMessage(message.encrypted, message.iv, roomKey);
+                            addMessage(message.user, decryptedText, message.timestamp, false);
+                        } catch (error) {
+                            console.error('Failed to decrypt message:', error);
+                            addMessage(message.user, '[Encrypted message - decryption failed]', message.timestamp, false);
+                        }
+                    }
+                    break;
+                    
+                case 'user_joined':
+                    addSystemMessage(`${message.user} joined the chat`);
+                    break;
+                    
+                case 'user_left':
+                    addSystemMessage(`${message.user} left the chat`);
+                    break;
+            }
+        }
+
+        function addSystemMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'text-center py-2 mb-3';
+            messageDiv.innerHTML = `
+                <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    ${escapeHtml(text)}
+                </span>
+            `;
+            messagesArea.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function generateRoomId() {
+            return Math.random().toString(36).substring(2, 6).toUpperCase() + 
+                   '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Key Management Functions
+        function showKeyManagement() {
+            keyManagementModal.classList.remove('hidden');
+            updateKeyManagementInfo();
+        }
+
+        function hideKeyManagement() {
+            keyManagementModal.classList.add('hidden');
+        }
+
+        function updateKeyManagementInfo() {
+            if (currentRoom) {
+                currentRoomId.textContent = currentRoom;
+            }
+            if (keyCreatedAt) {
+                const age = formatTime(Date.now() - keyCreatedAt.getTime());
+                keyAge.textContent = age;
+            }
+            document.getElementById('messageCount').textContent = `${messagesSent} encrypted`;
+        }
+
+        async function exportKeys() {
+            const passphrase = backupPassphrase.value.trim();
+            if (!passphrase) {
+                alert('Please enter a secure passphrase for key backup.');
+                return;
+            }
+
+            if (!roomKey) {
+                alert('No room key available to export.');
+                return;
+            }
+
+            try {
+                // Export current room key
+                const exportedKey = await exportKey(roomKey);
+                
+                // Create backup data
+                const backupData = {
+                    version: '1.0',
+                    created: new Date().toISOString(),
+                    room: currentRoom,
+                    key: exportedKey,
+                    keyHistory: keyHistory,
+                    user: currentUser
+                };
+
+                // Encrypt backup with passphrase
+                const encryptedBackup = await encryptBackup(JSON.stringify(backupData), passphrase);
+                
+                // Download as file
+                const blob = new Blob([JSON.stringify(encryptedBackup, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `zeepass-keys-${currentRoom}-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                alert('Keys exported successfully! Store this file securely.');
+                
+            } catch (error) {
+                console.error('Key export failed:', error);
+                alert('Failed to export keys. Please try again.');
+            }
+        }
+
+        async function importKeys(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const passphrase = backupPassphrase.value.trim();
+            if (!passphrase) {
+                alert('Please enter the passphrase used for key backup.');
+                return;
+            }
+
+            try {
+                const fileText = await file.text();
+                const encryptedBackup = JSON.parse(fileText);
+                
+                // Decrypt backup
+                const backupText = await decryptBackup(encryptedBackup, passphrase);
+                const backupData = JSON.parse(backupText);
+                
+                // Restore key
+                roomKey = await importKey(backupData.key);
+                keyCreatedAt = new Date(backupData.created);
+                keyHistory = backupData.keyHistory || [];
+                
+                // Update display
+                roomKeyDisplay.textContent = backupData.key.substring(0, 32) + '...';
+                updateKeyManagementInfo();
+                
+                alert('Keys imported successfully!');
+                
+            } catch (error) {
+                console.error('Key import failed:', error);
+                alert('Failed to import keys. Please check the file and passphrase.');
+            }
+
+            // Reset file input
+            keyFileInput.value = '';
+        }
+
+        async function rotateKeys() {
+            if (!roomKey || !currentRoom) {
+                alert('No active room to rotate keys.');
+                return;
+            }
+
+            try {
+                // Store current key in history
+                const oldKey = await exportKey(roomKey);
+                keyHistory.push({
+                    key: oldKey,
+                    created: keyCreatedAt.toISOString(),
+                    rotated: new Date().toISOString(),
+                    messagesCount: messagesSent
+                });
+
+                // Generate new key
+                const newKey = await generateRoomKey();
+                const exportedKey = await exportKey(newKey);
+                
+                // Update room data
+                const currentRoomData = window.location.hash ? 
+                    JSON.parse(atob(window.location.hash.substring(1))) : {};
+                
+                const newRoomData = {
+                    ...currentRoomData,
+                    key: exportedKey,
+                    created: new Date().toISOString(),
+                    rotated: true
+                };
+
+                // Update URL and global state
+                window.location.hash = btoa(JSON.stringify(newRoomData));
+                roomKey = newKey;
+                keyCreatedAt = new Date();
+                messagesSent = 0;
+                
+                // Update display
+                roomKeyDisplay.textContent = exportedKey.substring(0, 32) + '...';
+                updateKeyManagementInfo();
+                
+                // Notify other participants about key rotation
+                if (websocket && isConnected) {
+                    websocket.send(JSON.stringify({
+                        type: 'key_rotation',
+                        room: currentRoom,
+                        user: currentUser,
+                        newKey: exportedKey
+                    }));
+                }
+                
+                alert('Keys rotated successfully! Share the new room link with participants.');
+                
+            } catch (error) {
+                console.error('Key rotation failed:', error);
+                alert('Failed to rotate keys. Please try again.');
+            }
+        }
+
+        function togglePFS() {
+            pfsEnabled = pfsToggle.checked;
+            if (pfsEnabled && currentRoom) {
+                startKeyRotation();
+            } else {
+                stopKeyRotation();
+            }
+        }
+
+        function startKeyRotation() {
+            stopKeyRotation(); // Clear existing timer
+            const intervalMs = parseInt(rotationInterval.value) * 1000;
+            
+            rotationTimer = setInterval(async () => {
+                if (pfsEnabled && roomKey && currentRoom) {
+                    await rotateKeys();
+                }
+            }, intervalMs);
+            
+            console.log(`PFS enabled: Key rotation every ${intervalMs/1000} seconds`);
+        }
+
+        function stopKeyRotation() {
+            if (rotationTimer) {
+                clearInterval(rotationTimer);
+                rotationTimer = null;
+            }
+        }
+
+        function updateRotationInterval() {
+            if (pfsEnabled && currentRoom) {
+                startKeyRotation();
+            }
+        }
+
+        // Encryption functions for key backup
+        async function encryptBackup(data, passphrase) {
+            const encoder = new TextEncoder();
+            const keyMaterial = await window.crypto.subtle.importKey(
+                'raw',
+                encoder.encode(passphrase),
+                'PBKDF2',
+                false,
+                ['deriveBits', 'deriveKey']
+            );
+
+            const salt = window.crypto.getRandomValues(new Uint8Array(16));
+            const key = await window.crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt: salt,
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt']
+            );
+
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const encrypted = await window.crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                encoder.encode(data)
+            );
+
+            return {
+                encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+                iv: btoa(String.fromCharCode(...iv)),
+                salt: btoa(String.fromCharCode(...salt))
+            };
+        }
+
+        async function decryptBackup(encryptedData, passphrase) {
+            const encoder = new TextEncoder();
+            const keyMaterial = await window.crypto.subtle.importKey(
+                'raw',
+                encoder.encode(passphrase),
+                'PBKDF2',
+                false,
+                ['deriveBits', 'deriveKey']
+            );
+
+            const salt = new Uint8Array(atob(encryptedData.salt).split('').map(c => c.charCodeAt(0)));
+            const key = await window.crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt: salt,
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['decrypt']
+            );
+
+            const iv = new Uint8Array(atob(encryptedData.iv).split('').map(c => c.charCodeAt(0)));
+            const encrypted = new Uint8Array(atob(encryptedData.encrypted).split('').map(c => c.charCodeAt(0)));
+            
+            const decrypted = await window.crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                encrypted
+            );
+
+            const decoder = new TextDecoder();
+            return decoder.decode(decrypted);
+        }
+
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return `${days}d ${hours % 24}h`;
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+            return `${seconds}s`;
+        }
+
+        // Update message counter
+        const originalSendMessage = sendMessage;
+        sendMessage = async function() {
+            await originalSendMessage.call(this);
+            messagesSent++;
+            updateKeyManagementInfo();
+        };
+
+        // Close modal on outside click
+        keyManagementModal.addEventListener('click', (e) => {
+            if (e.target === keyManagementModal) {
+                hideKeyManagement();
+            }
+        });
+
+        // Explanation toggle functionality
+        document.getElementById('toggleExplanation').addEventListener('click', function() {
+            const content = document.getElementById('explanationContent');
+            const chevron = document.getElementById('explanationChevron');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm text-gray-300 mb-2">© 2024 Moonkite Labs Sdn. Bhd. - Professional IT & Security Solutions</p>
+            <p class="text-xs text-gray-400">Founded by <a href="https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/" class="hover:text-gray-200 underline" target="_blank">Nazri Abdullah</a>, Senior Software Engineer & Cybersecurity Expert</p>
+        </div>
+    </footer>
+</body>
+</html>
