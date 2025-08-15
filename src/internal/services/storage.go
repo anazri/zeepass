@@ -19,7 +19,7 @@ var (
 func InitRedis() {
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
-		Password: "lu7rodah8aefaiCi",
+		Password: "your-redis-password-here",
 		DB:       0,
 	})
 
@@ -31,7 +31,7 @@ func InitRedis() {
 		return
 	}
 	log.Printf("Connected to Redis: %s", pong)
-	
+
 	// Set Redis client for chat service
 	chatService := GetChatService()
 	if chatService != nil {
