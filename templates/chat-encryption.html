@@ -131,6 +131,13 @@
             </nav>
             
             <div class="flex items-center space-x-2">
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition" title="Open menu">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                
                 <!-- Dark Mode Toggle -->
                 <button id="themeToggle" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition" title="Toggle dark mode">
                     <svg id="sunIcon" class="w-4 h-4 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
@@ -146,7 +153,7 @@
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-white dark:bg-gray-800 shadow-lg theme-transition">
+        <div id="sidebar" class="fixed md:relative inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg theme-transition transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <nav class="py-4">
                 <a href="/text-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -195,8 +202,11 @@
             
         </div>
 
+        <!-- Mobile Overlay -->
+        <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden hidden"></div>
+
         <!-- Main Content -->
-        <div class="flex-1 p-8">
+        <div class="flex-1 p-4 md:p-8 md:ml-0">
             <div class="max-w-6xl mx-auto">
                 <!-- Page Header -->
                 <div class="mb-8">
@@ -659,7 +669,12 @@
         const currentRoomId = document.getElementById('currentRoomId');
 
         // Initialize
-        initializeCrypto();
+        (async () => {
+            const cryptoSupported = await initializeCrypto();
+            if (!cryptoSupported) {
+                return; // Exit if crypto not supported
+            }
+        })();
         
         // Standard theme functions
         function toggleTheme() {
@@ -686,6 +701,27 @@
         // Initialize theme and add event listener
         initTheme();
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        
+        // Mobile menu functionality
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+        
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+        
+        // Mobile menu event listeners
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
+        document.getElementById('mobileOverlay').addEventListener('click', closeMobileMenu);
         
         // Typing indicator functionality
         let typingTimer;
@@ -739,8 +775,12 @@
                 console.log('Crypto API initialized successfully');
             } catch (error) {
                 console.error('Crypto initialization failed:', error);
-                alert('Your browser does not support the required encryption features.');
+                alert('Your browser does not support the required encryption features. Please use a modern browser with HTTPS support.');
+                // Redirect to main page as fallback
+                window.location.href = '/';
+                return false;
             }
+            return true;
         }
 
         async function generateRoomKey() {
