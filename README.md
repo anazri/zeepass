@@ -230,7 +230,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Author
 
 **Nazri Abdullah**  
-Senior Software Engineer & Cybersecurity Expert  
+ Software Architect/Engineer & Cybersecurity Expert  
 [LinkedIn](https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/) | [GitHub](https://github.com/anazri)
 
 ---
