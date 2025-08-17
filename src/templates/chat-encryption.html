@@ -1,18 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Encryption - ZeePass</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'typing': 'typing 1.5s ease-in-out infinite',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
         .sidebar-active {
             background: rgba(99, 102, 241, 0.1);
             border-right: 3px solid #6366f1;
+        }
+        .dark .sidebar-active {
+            background: rgba(99, 102, 241, 0.2);
         }
         .message-bubble {
             max-width: 70%;
@@ -22,13 +43,23 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin-left: auto;
         }
+        .dark .message-sent {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
         .message-received {
             background: #f3f4f6;
             margin-right: auto;
         }
+        .dark .message-received {
+            background: #374151;
+            color: #e5e7eb;
+        }
         .chat-container {
             height: 500px;
             overflow-y: auto;
+        }
+        .dark .chat-container {
+            background: #1f2937;
         }
         .online-indicator {
             width: 8px;
@@ -42,6 +73,18 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes typing {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.4; }
+        }
         .connection-status {
             transition: all 0.3s ease;
         }
@@ -50,9 +93,21 @@
             font-size: 11px;
             word-break: break-all;
         }
+        .theme-transition {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .typing-indicator {
+            animation: typing 1.5s ease-in-out infinite;
+        }
+        .message-reaction {
+            transition: all 0.2s ease;
+        }
+        .message-reaction:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 dark:bg-gray-900 theme-transition" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches) }" x-init="initTheme()" :class="{ 'dark': darkMode }">
     <!-- Header -->
     <header class="gradient-bg text-white shadow-lg">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -75,7 +130,16 @@
             </nav>
             
             <div class="flex items-center space-x-2">
-                <button class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition">
+                <!-- Dark Mode Toggle -->
+                <button @click="toggleTheme()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition" :title="darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+                    <svg x-show="!darkMode" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+                    </svg>
+                    <svg x-show="darkMode" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                    </svg>
+                </button>
+                <button class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                     </svg>
@@ -86,9 +150,9 @@
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-white shadow-lg">
+        <div class="w-64 bg-white dark:bg-gray-800 shadow-lg theme-transition">
             <nav class="py-4">
-                <a href="/text-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/text-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                         <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a2 2 0 002 2h2a2 2 0 002-2V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
@@ -96,14 +160,14 @@
                     <span>Text Encryption</span>
                 </a>
                 
-                <a href="/file-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/file-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
                     <span>File Encryption</span>
                 </a>
                 
-                <a href="/chat-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50 sidebar-active">
+                <a href="/chat-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 sidebar-active theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
                         <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
@@ -111,21 +175,21 @@
                     <span class="font-medium">Chat Encryption</span>
                 </a>
                 
-                <a href="/password-generator" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/password-generator" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
                     </svg>
                     <span>Password</span>
                 </a>
                 
-                <a href="/ssh-key" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/ssh-key" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd"/>
                     </svg>
                     <span>SSH Key</span>
                 </a>
                 
-                <a href="/base64" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/base64" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
                     </svg>
@@ -140,76 +204,76 @@
             <div class="max-w-6xl mx-auto">
                 <!-- Page Header -->
                 <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Chat Encryption</h2>
-                    <p class="text-gray-600">End-to-end encrypted chat rooms with perfect forward secrecy</p>
+                    <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 theme-transition">Chat Encryption</h2>
+                    <p class="text-gray-600 dark:text-gray-400 theme-transition">End-to-end encrypted chat rooms with perfect forward secrecy</p>
                 </div>
 
                 <!-- How It Works Explanation -->
-                <div class="bg-purple-50 border border-purple-200 rounded-lg mb-6">
+                <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg mb-6 theme-transition">
                     <div class="p-4">
                         <button id="toggleExplanation" class="flex items-center justify-between w-full text-left">
                             <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="w-8 h-8 bg-purple-100 dark:bg-purple-800 rounded-full flex items-center justify-center theme-transition">
+                                    <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-purple-900">💬 How Chat Encryption Works</h3>
-                                    <p class="text-sm text-purple-700">Learn how your conversations stay private (click to expand)</p>
+                                    <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-100 theme-transition">💬 How Chat Encryption Works</h3>
+                                    <p class="text-sm text-purple-700 dark:text-purple-300 theme-transition">Learn how your conversations stay private (click to expand)</p>
                                 </div>
                             </div>
-                            <svg id="explanationChevron" class="w-5 h-5 text-purple-600 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg id="explanationChevron" class="w-5 h-5 text-purple-600 dark:text-purple-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
                         
-                        <div id="explanationContent" class="hidden mt-4 pt-4 border-t border-purple-200">
+                        <div id="explanationContent" class="hidden mt-4 pt-4 border-t border-purple-200 dark:border-purple-700 theme-transition">
                             <div class="grid md:grid-cols-2 gap-6">
                                 <!-- Process Steps -->
                                 <div>
-                                    <h4 class="font-semibold text-purple-900 mb-3">Simple Steps:</h4>
+                                    <h4 class="font-semibold text-purple-900 dark:text-purple-100 mb-3 theme-transition">Simple Steps:</h4>
                                     <div class="space-y-3">
                                         <div class="flex items-start space-x-3">
                                             <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
                                             <div>
-                                                <p class="text-sm text-purple-800"><strong>🚪 You enter a chat room</strong></p>
-                                                <p class="text-xs text-purple-600 mt-1">Create or join any room with a unique room code</p>
+                                                <p class="text-sm text-purple-800 dark:text-purple-200 theme-transition"><strong>🚪 You enter a chat room</strong></p>
+                                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 theme-transition">Create or join any room with a unique room code</p>
                                             </div>
                                         </div>
                                         <div class="flex items-start space-x-3">
                                             <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
                                             <div>
-                                                <p class="text-sm text-purple-800"><strong>🔑 Everyone gets matching "secret keys"</strong></p>
-                                                <p class="text-xs text-purple-600 mt-1">Your browsers automatically create identical encryption keys</p>
+                                                <p class="text-sm text-purple-800 dark:text-purple-200 theme-transition"><strong>🔑 Everyone gets matching "secret keys"</strong></p>
+                                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 theme-transition">Your browsers automatically create identical encryption keys</p>
                                             </div>
                                         </div>
                                         <div class="flex items-start space-x-3">
                                             <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
                                             <div>
-                                                <p class="text-sm text-purple-800"><strong>✍️ You type and send messages</strong></p>
-                                                <p class="text-xs text-purple-600 mt-1">Normal chatting - type and press enter</p>
+                                                <p class="text-sm text-purple-800 dark:text-purple-200 theme-transition"><strong>✍️ You type and send messages</strong></p>
+                                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 theme-transition">Normal chatting - type and press enter</p>
                                             </div>
                                         </div>
                                         <div class="flex items-start space-x-3">
                                             <div class="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
                                             <div>
-                                                <p class="text-sm text-purple-800"><strong>🔒 Messages get scrambled instantly</strong></p>
-                                                <p class="text-xs text-purple-600 mt-1">Before leaving your device, every message becomes unreadable</p>
+                                                <p class="text-sm text-purple-800 dark:text-purple-200 theme-transition"><strong>🔒 Messages get scrambled instantly</strong></p>
+                                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 theme-transition">Before leaving your device, every message becomes unreadable</p>
                                             </div>
                                         </div>
                                         <div class="flex items-start space-x-3">
                                             <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">5</div>
                                             <div>
-                                                <p class="text-sm text-purple-800"><strong>👥 Others see your message clearly</strong></p>
-                                                <p class="text-xs text-purple-600 mt-1">Their devices automatically unscramble using the shared key</p>
+                                                <p class="text-sm text-purple-800 dark:text-purple-200 theme-transition"><strong>👥 Others see your message clearly</strong></p>
+                                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 theme-transition">Their devices automatically unscramble using the shared key</p>
                                             </div>
                                         </div>
                                         <div class="flex items-start space-x-3">
                                             <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">6</div>
                                             <div>
-                                                <p class="text-sm text-purple-800"><strong>🔄 Keys automatically change regularly</strong></p>
-                                                <p class="text-xs text-purple-600 mt-1">Perfect Forward Secrecy - old messages stay safe even if keys leak</p>
+                                                <p class="text-sm text-purple-800 dark:text-purple-200 theme-transition"><strong>🔄 Keys automatically change regularly</strong></p>
+                                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 theme-transition">Perfect Forward Secrecy - old messages stay safe even if keys leak</p>
                                             </div>
                                         </div>
                                     </div>
@@ -217,11 +281,11 @@
 
                                 <!-- Visual Analogy -->
                                 <div>
-                                    <h4 class="font-semibold text-purple-900 mb-3">Think of it like this:</h4>
-                                    <div class="bg-white rounded-lg p-4 border border-purple-200">
+                                    <h4 class="font-semibold text-purple-900 dark:text-purple-100 mb-3 theme-transition">Think of it like this:</h4>
+                                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700 theme-transition">
                                         <div class="text-center space-y-4">
                                             <div class="flex items-center justify-center space-x-2">
-                                                <div class="bg-gray-100 px-3 py-2 rounded text-xs font-mono flex items-center space-x-1">
+                                                <div class="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-xs font-mono flex items-center space-x-1 theme-transition">
                                                     <span>👤</span>
                                                     <span>"Hello everyone!"</span>
                                                 </div>
@@ -231,12 +295,12 @@
                                             </div>
                                             
                                             <div class="flex items-center justify-center">
-                                                <div class="bg-purple-100 p-3 rounded-lg">
+                                                <div class="bg-purple-100 dark:bg-purple-800 p-3 rounded-lg theme-transition">
                                                     <svg class="w-8 h-8 text-purple-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
                                                         <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
                                                         <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
                                                     </svg>
-                                                    <p class="text-xs text-purple-700 font-medium">Private Group Chat</p>
+                                                    <p class="text-xs text-purple-700 dark:text-purple-300 font-medium theme-transition">Private Group Chat</p>
                                                 </div>
                                             </div>
 
@@ -244,15 +308,15 @@
                                                 <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                                 </svg>
-                                                <div class="bg-red-100 px-3 py-2 rounded text-xs font-mono">⚡Z8#kX9mP2vQ7w...</div>
+                                                <div class="bg-red-100 dark:bg-red-900 px-3 py-2 rounded text-xs font-mono dark:text-red-200 theme-transition">⚡Z8#kX9mP2vQ7w...</div>
                                             </div>
                                             
                                             <div class="flex justify-center space-x-4">
-                                                <div class="bg-green-100 px-2 py-1 rounded text-xs">👤 Alice sees: "Hello everyone!"</div>
-                                                <div class="bg-green-100 px-2 py-1 rounded text-xs">👤 Bob sees: "Hello everyone!"</div>
+                                                <div class="bg-green-100 dark:bg-green-900 px-2 py-1 rounded text-xs dark:text-green-200 theme-transition">👤 Alice sees: "Hello everyone!"</div>
+                                                <div class="bg-green-100 dark:bg-green-900 px-2 py-1 rounded text-xs dark:text-green-200 theme-transition">👤 Bob sees: "Hello everyone!"</div>
                                             </div>
                                             
-                                            <p class="text-xs text-purple-600 italic">
+                                            <p class="text-xs text-purple-600 dark:text-purple-400 italic theme-transition">
                                                 Like whispering in a crowded room - only people in your circle can hear, 
                                                 but anyone eavesdropping just hears gibberish!
                                             </p>
@@ -262,14 +326,14 @@
                             </div>
 
                             <!-- Security Note -->
-                            <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                            <div class="mt-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 theme-transition">
                                 <div class="flex items-start space-x-2">
-                                    <svg class="w-5 h-5 text-indigo-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                     </svg>
                                     <div>
-                                        <p class="text-sm font-semibold text-indigo-800">🛡️ Enterprise-Grade Security</p>
-                                        <p class="text-xs text-indigo-700">
+                                        <p class="text-sm font-semibold text-indigo-800 dark:text-indigo-200 theme-transition">🛡️ Enterprise-Grade Security</p>
+                                        <p class="text-xs text-indigo-700 dark:text-indigo-300 theme-transition">
                                             AES-256-GCM encryption + Perfect Forward Secrecy. Messages auto-expire after 24 hours. 
                                             Not even the server can read your conversations!
                                         </p>
@@ -281,41 +345,41 @@
                 </div>
 
                 <!-- Room Setup Section -->
-                <div id="roomSetup" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-                    <div class="border-b border-gray-200 p-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Chat Room</h3>
+                <div id="roomSetup" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition">
+                    <div class="border-b border-gray-200 dark:border-gray-600 p-4 theme-transition">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 theme-transition">Chat Room</h3>
                     </div>
                     
                     <div class="p-6">
                         <div class="grid md:grid-cols-2 gap-6">
                             <!-- Create Room -->
                             <div class="space-y-4">
-                                <h4 class="font-semibold text-gray-800">Create New Room</h4>
+                                <h4 class="font-semibold text-gray-800 dark:text-gray-100 theme-transition">Create New Room</h4>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
-                                    <input type="text" id="createUserName" placeholder="Enter your name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 theme-transition">Your Name</label>
+                                    <input type="text" id="createUserName" placeholder="Enter your name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Room Name</label>
-                                    <input type="text" id="createRoomName" placeholder="Enter room name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 theme-transition">Room Name</label>
+                                    <input type="text" id="createRoomName" placeholder="Enter room name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
                                 </div>
-                                <button id="createRoomBtn" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                                <button id="createRoomBtn" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-500 transition theme-transition">
                                     Create Room
                                 </button>
                             </div>
 
                             <!-- Join Room -->
                             <div class="space-y-4">
-                                <h4 class="font-semibold text-gray-800">Join Existing Room</h4>
+                                <h4 class="font-semibold text-gray-800 dark:text-gray-100 theme-transition">Join Existing Room</h4>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
-                                    <input type="text" id="joinUserName" placeholder="Enter your name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 theme-transition">Your Name</label>
+                                    <input type="text" id="joinUserName" placeholder="Enter your name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Room Link</label>
-                                    <input type="text" id="joinRoomId" placeholder="Paste room link or encoded room data" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 theme-transition">Room Link</label>
+                                    <input type="text" id="joinRoomId" placeholder="Paste room link or encoded room data" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
                                 </div>
-                                <button id="joinRoomBtn" class="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+                                <button id="joinRoomBtn" class="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 dark:hover:bg-green-500 transition theme-transition">
                                     Join Room
                                 </button>
                             </div>
@@ -326,34 +390,34 @@
                 <!-- Chat Interface (Initially Hidden) -->
                 <div id="chatInterface" class="hidden">
                     <!-- Chat Header -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-                        <div class="p-4 border-b border-gray-200">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition">
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-600 theme-transition">
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center space-x-3">
                                     <div class="online-indicator"></div>
                                     <div>
-                                        <h3 class="text-lg font-semibold text-gray-800" id="roomTitle">Room Name</h3>
-                                        <p class="text-sm text-gray-500">
+                                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 theme-transition" id="roomTitle">Room Name</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 theme-transition">
                                             <span id="connectionStatus">Connected</span> • 
-                                            Room ID: <span id="displayRoomId" class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">XXXX-XXXX</span>
+                                            Room ID: <span id="displayRoomId" class="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded dark:text-gray-300 theme-transition">XXXX-XXXX</span>
                                         </p>
                                     </div>
                                 </div>
                                 
                                 <div class="flex items-center space-x-2">
-                                    <button id="keyManagementBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition text-sm">
+                                    <button id="keyManagementBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-300 rounded hover:bg-purple-200 dark:hover:bg-purple-700 transition text-sm theme-transition">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
                                         </svg>
                                         <span>Keys</span>
                                     </button>
-                                    <button id="shareRoomBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm">
+                                    <button id="shareRoomBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-700 transition text-sm theme-transition">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
                                         </svg>
                                         <span>Share</span>
                                     </button>
-                                    <button id="leaveRoomBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm">
+                                    <button id="leaveRoomBtn" class="inline-flex items-center space-x-2 px-3 py-1 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-700 transition text-sm theme-transition">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
                                         </svg>
@@ -365,8 +429,8 @@
                     </div>
 
                     <!-- Chat Messages -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-                        <div class="chat-container p-4" id="chatContainer">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition" x-data="{ typingUsers: [], messageReactions: {} }">
+                        <div class="chat-container p-4 bg-gray-50 dark:bg-gray-900 theme-transition" id="chatContainer">
                             <!-- Welcome message -->
                             <div class="text-center py-8">
                                 <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -374,28 +438,38 @@
                                         <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                     </svg>
                                 </div>
-                                <h4 class="text-lg font-semibold text-gray-800 mb-2">🔒 End-to-End Encrypted Chat</h4>
-                                <p class="text-gray-600 text-sm">Your messages are encrypted on your device. Only participants in this room can read them.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2 theme-transition">🔒 End-to-End Encrypted Chat</h4>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm theme-transition">Your messages are encrypted on your device. Only participants in this room can read them.</p>
                             </div>
                             
                             <div id="messagesArea"></div>
+                            
+                            <!-- Typing Indicator -->
+                            <div x-show="typingUsers.length > 0" class="flex items-center space-x-2 mt-3 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg theme-transition">
+                                <div class="flex space-x-1">
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator"></div>
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator" style="animation-delay: 0.2s"></div>
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator" style="animation-delay: 0.4s"></div>
+                                </div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400" x-text="typingUsers.join(', ') + (typingUsers.length === 1 ? ' is typing...' : ' are typing...')"></span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Message Input -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 theme-transition">
                         <div class="p-4">
                             <div class="flex space-x-3">
                                 <div class="flex-1">
-                                    <textarea id="messageInput" rows="2" placeholder="Type your encrypted message..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none" maxlength="2000"></textarea>
+                                    <textarea id="messageInput" rows="2" placeholder="Type your encrypted message..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition" maxlength="2000" @input="handleTyping()" @keydown.enter.prevent="sendMessage()"></textarea>
                                 </div>
                                 <div class="flex flex-col space-y-2">
-                                    <button id="sendMessageBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                                    <button id="sendMessageBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-500 transition theme-transition">
                                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
                                         </svg>
                                     </button>
-                                    <div class="text-xs text-gray-500 text-center">
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 text-center theme-transition">
                                         <span id="messageCount">0</span>/2000
                                     </div>
                                 </div>
@@ -405,7 +479,7 @@
                 </div>
 
                 <!-- Encryption Info -->
-                <div id="encryptionInfo" class="hidden mt-6 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded">
+                <div id="encryptionInfo" class="hidden mt-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 px-4 py-3 rounded theme-transition">
                     <div class="flex items-start">
                         <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
@@ -414,7 +488,7 @@
                             <p class="font-medium">🔐 Encryption Details</p>
                             <p class="text-sm mt-1">
                                 This room uses AES-256-GCM encryption with PFS rotation. 
-                                Room Key: <span id="roomKeyDisplay" class="key-display bg-amber-100 px-2 py-1 rounded font-mono text-xs">Loading...</span>
+                                Room Key: <span id="roomKeyDisplay" class="key-display bg-amber-100 dark:bg-amber-800 px-2 py-1 rounded font-mono text-xs dark:text-amber-200 theme-transition">Loading...</span>
                             </p>
                         </div>
                     </div>
@@ -424,12 +498,12 @@
     </div>
 
     <!-- Key Management Modal -->
-    <div id="keyManagementModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+    <div id="keyManagementModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 flex items-center justify-center z-50 theme-transition">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-96 overflow-y-auto theme-transition">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">🔑 Key Management</h3>
-                    <button id="closeKeyModal" class="text-gray-400 hover:text-gray-600">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 theme-transition">🔑 Key Management</h3>
+                    <button id="closeKeyModal" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 theme-transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -438,20 +512,20 @@
 
                 <div class="space-y-6">
                     <!-- Key Backup Section -->
-                    <div class="border rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-800 mb-2">🛡️ Key Backup</h4>
-                        <p class="text-sm text-gray-600 mb-4">Backup your encryption keys for account recovery. Keys are encrypted with your passphrase.</p>
+                    <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 theme-transition">
+                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-2 theme-transition">🛡️ Key Backup</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 theme-transition">Backup your encryption keys for account recovery. Keys are encrypted with your passphrase.</p>
                         
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Backup Passphrase</label>
-                                <input type="password" id="backupPassphrase" placeholder="Enter secure passphrase" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 theme-transition">Backup Passphrase</label>
+                                <input type="password" id="backupPassphrase" placeholder="Enter secure passphrase" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
                             </div>
                             <div class="flex space-x-2">
-                                <button id="exportKeysBtn" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm">
+                                <button id="exportKeysBtn" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-500 transition text-sm theme-transition">
                                     Export Keys
                                 </button>
-                                <button id="importKeysBtn" class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm">
+                                <button id="importKeysBtn" class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-500 transition text-sm theme-transition">
                                     Import Keys
                                 </button>
                             </div>
@@ -459,48 +533,48 @@
                     </div>
 
                     <!-- Perfect Forward Secrecy -->
-                    <div class="border rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-800 mb-2">🔄 Perfect Forward Secrecy</h4>
-                        <p class="text-sm text-gray-600 mb-4">Automatically rotate encryption keys to ensure past messages remain secure.</p>
+                    <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 theme-transition">
+                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-2 theme-transition">🔄 Perfect Forward Secrecy</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 theme-transition">Automatically rotate encryption keys to ensure past messages remain secure.</p>
                         
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-700">Key Rotation</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 theme-transition">Key Rotation</span>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="pfsToggle" class="sr-only peer" checked>
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                                 </label>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-700">Rotation Interval</span>
-                                <select id="rotationInterval" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                                <span class="text-sm text-gray-700 dark:text-gray-300 theme-transition">Rotation Interval</span>
+                                <select id="rotationInterval" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
                                     <option value="3600">1 Hour</option>
                                     <option value="21600" selected>6 Hours</option>
                                     <option value="86400">24 Hours</option>
                                 </select>
                             </div>
-                            <button id="rotateNowBtn" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
+                            <button id="rotateNowBtn" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-500 transition text-sm theme-transition">
                                 Rotate Keys Now
                             </button>
                         </div>
                     </div>
 
                     <!-- Key Recovery -->
-                    <div class="border rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-800 mb-2">🚨 Emergency Recovery</h4>
-                        <p class="text-sm text-gray-600 mb-4">Secure key escrow for account recovery (optional).</p>
+                    <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 theme-transition">
+                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-2 theme-transition">🚨 Emergency Recovery</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 theme-transition">Secure key escrow for account recovery (optional).</p>
                         
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Recovery Email</label>
-                                <input type="email" id="recoveryEmail" placeholder="recovery@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 theme-transition">Recovery Email</label>
+                                <input type="email" id="recoveryEmail" placeholder="recovery@example.com" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
                             </div>
                             <div class="flex items-center space-x-2">
                                 <input type="checkbox" id="escrowEnabled" class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500">
-                                <label class="text-sm text-gray-700">Enable secure key escrow</label>
+                                <label class="text-sm text-gray-700 dark:text-gray-300 theme-transition">Enable secure key escrow</label>
                             </div>
-                            <div class="bg-yellow-50 border border-yellow-200 rounded p-3">
-                                <p class="text-xs text-yellow-800">
+                            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-3 theme-transition">
+                                <p class="text-xs text-yellow-800 dark:text-yellow-200 theme-transition">
                                     ⚠️ Key escrow stores encrypted recovery keys on our servers. This reduces security but enables account recovery if you lose your keys.
                                 </p>
                             </div>
@@ -508,24 +582,24 @@
                     </div>
 
                     <!-- Current Room Key Info -->
-                    <div class="border rounded-lg p-4 bg-gray-50">
-                        <h4 class="font-semibold text-gray-800 mb-2">📋 Current Session</h4>
+                    <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700 theme-transition">
+                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-2 theme-transition">📋 Current Session</h4>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Algorithm:</span>
-                                <span class="font-mono">AES-256-GCM</span>
+                                <span class="text-gray-600 dark:text-gray-400 theme-transition">Algorithm:</span>
+                                <span class="font-mono text-gray-900 dark:text-gray-100 theme-transition">AES-256-GCM</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Key Age:</span>
-                                <span id="keyAge">Just created</span>
+                                <span class="text-gray-600 dark:text-gray-400 theme-transition">Key Age:</span>
+                                <span id="keyAge" class="text-gray-900 dark:text-gray-100 theme-transition">Just created</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Messages:</span>
-                                <span id="messageCount">0 encrypted</span>
+                                <span class="text-gray-600 dark:text-gray-400 theme-transition">Messages:</span>
+                                <span id="messageCount" class="text-gray-900 dark:text-gray-100 theme-transition">0 encrypted</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Room ID:</span>
-                                <span id="currentRoomId" class="font-mono text-xs">-</span>
+                                <span class="text-gray-600 dark:text-gray-400 theme-transition">Room ID:</span>
+                                <span id="currentRoomId" class="font-mono text-xs text-gray-900 dark:text-gray-100 theme-transition">-</span>
                             </div>
                         </div>
                     </div>
@@ -590,6 +664,50 @@
 
         // Initialize
         initializeCrypto();
+        
+        // Dark mode and Alpine.js functions
+        function toggleTheme() {
+            this.darkMode = !this.darkMode;
+            localStorage.setItem('darkMode', this.darkMode);
+            document.documentElement.classList.toggle('dark', this.darkMode);
+        }
+        
+        function initTheme() {
+            const savedTheme = localStorage.getItem('darkMode');
+            if (savedTheme !== null) {
+                this.darkMode = savedTheme === 'true';
+            } else {
+                this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+            document.documentElement.classList.toggle('dark', this.darkMode);
+        }
+        
+        // Typing indicator functionality
+        let typingTimer;
+        function handleTyping() {
+            if (websocket && isConnected && currentUser) {
+                // Send typing indicator
+                websocket.send(JSON.stringify({
+                    type: 'typing',
+                    room: currentRoom,
+                    user: currentUser
+                }));
+                
+                // Clear existing timer
+                clearTimeout(typingTimer);
+                
+                // Stop typing after 3 seconds of inactivity
+                typingTimer = setTimeout(() => {
+                    if (websocket && isConnected) {
+                        websocket.send(JSON.stringify({
+                            type: 'stop_typing',
+                            room: currentRoom,
+                            user: currentUser
+                        }));
+                    }
+                }, 3000);
+            }
+        }
         
         // Check for room data in URL fragment on page load
         window.addEventListener('load', () => {
@@ -922,20 +1040,68 @@
 
         function addMessage(user, message, timestamp, isSent = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message-bubble rounded-lg p-3 mb-3 ${isSent ? 'message-sent text-white' : 'message-received text-gray-800'}`;
+            messageDiv.className = `message-bubble rounded-lg p-3 mb-3 ${isSent ? 'message-sent text-white' : 'message-received text-gray-800 dark:text-gray-200'} theme-transition`;
             
             const time = new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             
             messageDiv.innerHTML = `
                 <div class="flex justify-between items-start mb-1">
-                    <span class="font-medium text-sm ${isSent ? 'text-blue-100' : 'text-gray-600'}">${user}</span>
-                    <span class="text-xs ${isSent ? 'text-blue-200' : 'text-gray-500'} ml-2">${time}</span>
+                    <span class="font-medium text-sm ${isSent ? 'text-blue-100' : 'text-gray-600 dark:text-gray-400'}">${user}</span>
+                    <span class="text-xs ${isSent ? 'text-blue-200' : 'text-gray-500 dark:text-gray-500'} ml-2">${time}</span>
                 </div>
-                <p class="text-sm leading-relaxed">${escapeHtml(message)}</p>
+                <p class="text-sm leading-relaxed mb-2">${escapeHtml(message)}</p>
+                <div class="flex items-center space-x-2 mt-2">
+                    <button onclick="addReaction('${messageId}', '👍')" class="message-reaction text-xs px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 theme-transition">👍</button>
+                    <button onclick="addReaction('${messageId}', '❤️')" class="message-reaction text-xs px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 theme-transition">❤️</button>
+                    <button onclick="addReaction('${messageId}', '😂')" class="message-reaction text-xs px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 theme-transition">😂</button>
+                    <div id="reactions_${messageId}" class="flex space-x-1 ml-2"></div>
+                </div>
             `;
             
+            messageDiv.id = messageId;
             messagesArea.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Message reaction functionality
+        const messageReactions = {};
+        function addReaction(messageId, emoji) {
+            if (!messageReactions[messageId]) {
+                messageReactions[messageId] = {};
+            }
+            if (!messageReactions[messageId][emoji]) {
+                messageReactions[messageId][emoji] = 0;
+            }
+            messageReactions[messageId][emoji]++;
+            
+            updateReactionDisplay(messageId);
+            
+            // Send reaction via WebSocket
+            if (websocket && isConnected) {
+                websocket.send(JSON.stringify({
+                    type: 'reaction',
+                    room: currentRoom,
+                    user: currentUser,
+                    messageId: messageId,
+                    emoji: emoji
+                }));
+            }
+        }
+        
+        function updateReactionDisplay(messageId) {
+            const reactionsContainer = document.getElementById(`reactions_${messageId}`);
+            if (!reactionsContainer || !messageReactions[messageId]) return;
+            
+            reactionsContainer.innerHTML = '';
+            Object.entries(messageReactions[messageId]).forEach(([emoji, count]) => {
+                if (count > 0) {
+                    const reactionSpan = document.createElement('span');
+                    reactionSpan.className = 'text-xs bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded-full theme-transition';
+                    reactionSpan.textContent = `${emoji} ${count}`;
+                    reactionsContainer.appendChild(reactionSpan);
+                }
+            });
         }
 
         function connectWebSocket() {
@@ -1015,6 +1181,40 @@
                 case 'user_left':
                     addSystemMessage(`${message.user} left the chat`);
                     break;
+                    
+                case 'typing':
+                    if (message.user !== currentUser) {
+                        const typingIndicator = document.querySelector('[x-data]').__x.$data;
+                        if (typingIndicator && !typingIndicator.typingUsers.includes(message.user)) {
+                            typingIndicator.typingUsers.push(message.user);
+                        }
+                    }
+                    break;
+                    
+                case 'stop_typing':
+                    if (message.user !== currentUser) {
+                        const typingIndicator = document.querySelector('[x-data]').__x.$data;
+                        if (typingIndicator) {
+                            const index = typingIndicator.typingUsers.indexOf(message.user);
+                            if (index > -1) {
+                                typingIndicator.typingUsers.splice(index, 1);
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'reaction':
+                    if (message.messageId && message.emoji) {
+                        if (!messageReactions[message.messageId]) {
+                            messageReactions[message.messageId] = {};
+                        }
+                        if (!messageReactions[message.messageId][message.emoji]) {
+                            messageReactions[message.messageId][message.emoji] = 0;
+                        }
+                        messageReactions[message.messageId][message.emoji]++;
+                        updateReactionDisplay(message.messageId);
+                    }
+                    break;
             }
         }
 
@@ -1022,7 +1222,7 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = 'text-center py-2 mb-3';
             messageDiv.innerHTML = `
-                <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full theme-transition">
                     ${escapeHtml(text)}
                 </span>
             `;
@@ -1363,10 +1563,10 @@
     </script>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-6 mt-12">
+    <footer class="bg-gray-800 dark:bg-gray-900 text-white py-6 mt-12 theme-transition">
         <div class="container mx-auto px-4 text-center">
-            <p class="text-sm text-gray-300 mb-2">© 2024 Moonkite Labs Sdn. Bhd. - Professional IT & Security Solutions</p>
-            <p class="text-xs text-gray-400">Founded by <a href="https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/" class="hover:text-gray-200 underline" target="_blank">Nazri Abdullah</a>, Senior Software Engineer & Cybersecurity Expert</p>
+            <p class="text-sm text-gray-300 dark:text-gray-400 mb-2 theme-transition">© 2024 Moonkite Labs Sdn. Bhd. - Professional IT & Security Solutions</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 theme-transition">Founded by <a href="https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/" class="hover:text-gray-200 dark:hover:text-gray-300 underline theme-transition" target="_blank">Nazri Abdullah</a>, Senior Software Engineer & Cybersecurity Expert</p>
         </div>
     </footer>
 </body>
