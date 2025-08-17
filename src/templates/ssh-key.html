@@ -1,18 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSH Key - ZeePass</title>
+    <title>SSH Key Generator - ZeePass</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'progress-step': 'progressStep 0.8s ease-in-out forwards',
+                        'key-generate': 'keyGenerate 2s ease-in-out',
+                        'pulse-success': 'pulseSuccess 1s ease-in-out',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
         .sidebar-active {
             background: rgba(99, 102, 241, 0.1);
             border-right: 3px solid #6366f1;
+        }
+        .dark .sidebar-active {
+            background: rgba(99, 102, 241, 0.2);
         }
         .key-display {
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -21,17 +45,108 @@
             word-break: break-all;
             white-space: pre-wrap;
         }
+        .theme-transition {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .step-indicator {
+            position: relative;
+        }
+        .step-indicator::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            width: 2px;
+            height: 30px;
+            background: #e5e7eb;
+            transform: translateX(-50%);
+        }
+        .dark .step-indicator::after {
+            background: #374151;
+        }
+        .step-indicator.active::after {
+            background: #6366f1;
+        }
+        .step-indicator:last-child::after {
+            display: none;
+        }
+        .progress-bar {
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: progressShimmer 1.5s infinite;
+        }
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes progressStep {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        @keyframes keyGenerate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes pulseSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes fingerprintGenerate {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes progressShimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Skeleton loading animations */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        .dark .skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 dark:bg-gray-900 theme-transition">
     <!-- Header -->
     <header class="gradient-bg text-white shadow-lg">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <a href="/" class="flex items-center space-x-2">
                     <div class="w-8 h-8 bg-white rounded flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                        <!-- Heroicons: lock-closed -->
+                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm-3.75 8.25v-3a3.75 3.75 0 117.5 0v3h-7.5z" clip-rule="evenodd"/>
                         </svg>
                     </div>
                     <h1 class="text-xl font-bold">ZeePass</h1>
@@ -46,9 +161,21 @@
             </nav>
             
             <div class="flex items-center space-x-2">
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition" aria-label="Toggle dark mode">
+                    <!-- Heroicons: sun (light mode) -->
+                    <svg id="lightModeIcon" class="w-4 h-4 transition-transform dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+                    </svg>
+                    <!-- Heroicons: moon (dark mode) -->
+                    <svg id="darkModeIcon" class="w-4 h-4 transition-transform hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+                    </svg>
+                </button>
                 <button class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                    <!-- Heroicons: question-mark-circle -->
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/>
                     </svg>
                 </button>
             </div>
@@ -57,9 +184,9 @@
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-white shadow-lg">
+        <div class="w-64 bg-white dark:bg-gray-800 shadow-lg theme-transition">
             <nav class="py-4">
-                <a href="/text-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/text-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                         <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a2 2 0 002 2h2a2 2 0 002-2V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
@@ -67,14 +194,14 @@
                     <span>Text Encryption</span>
                 </a>
                 
-                <a href="/file-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/file-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
                     <span>File Encryption</span>
                 </a>
                 
-                <a href="/chat-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/chat-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
                         <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
@@ -82,43 +209,124 @@
                     <span>Chat Encryption</span>
                 </a>
                 
-                <a href="/password-generator" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/password-generator" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
                     </svg>
                     <span>Password</span>
                 </a>
                 
-                <a href="/ssh-key" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50 sidebar-active">
+                <a href="/ssh-key" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 sidebar-active theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd"/>
                     </svg>
                     <span class="font-medium">SSH Key</span>
                 </a>
                 
-                <a href="/base64" class="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-gray-50">
+                <a href="/base64" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
                     </svg>
                     <span>Base64</span>
                 </a>
             </nav>
-            
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 p-8">
+        <div class="flex-1 p-8 bg-gray-50 dark:bg-gray-900 theme-transition">
             <div class="max-w-4xl mx-auto">
                 <!-- Page Header -->
                 <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">SSH Key</h2>
-                    <p class="text-gray-600">Generate SSH key pairs for secure authentication</p>
+                    <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 theme-transition">SSH Key Generator</h2>
+                    <p class="text-gray-600 dark:text-gray-400 theme-transition">Generate secure SSH key pairs with advanced features and fingerprint visualization</p>
+                </div>
+
+                <!-- Step-by-step Progress Indicator -->
+                <div id="stepProgress" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 theme-transition">Generation Steps</h3>
+                            <div class="text-sm text-gray-500 dark:text-gray-400 theme-transition">
+                                <span id="currentStep">1</span> of 4
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="step-indicator active flex flex-col items-center">
+                                <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium mb-2">1</div>
+                                <span class="text-xs text-gray-600 dark:text-gray-400 text-center theme-transition">Choose Type</span>
+                            </div>
+                            <div class="step-indicator flex flex-col items-center">
+                                <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center text-sm font-medium mb-2 theme-transition">2</div>
+                                <span class="text-xs text-gray-600 dark:text-gray-400 text-center theme-transition">Configure</span>
+                            </div>
+                            <div class="step-indicator flex flex-col items-center">
+                                <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center text-sm font-medium mb-2 theme-transition">3</div>
+                                <span class="text-xs text-gray-600 dark:text-gray-400 text-center theme-transition">Generate</span>
+                            </div>
+                            <div class="step-indicator flex flex-col items-center">
+                                <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center text-sm font-medium mb-2 theme-transition">4</div>
+                                <span class="text-xs text-gray-600 dark:text-gray-400 text-center theme-transition">Download</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 theme-transition">
+                                <div id="progressBar" class="bg-blue-600 h-2 rounded-full progress-bar" style="width: 25%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Type Comparison Table -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition">
+                    <div class="border-b border-gray-200 dark:border-gray-600 p-4 theme-transition">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 theme-transition">Key Type Comparison</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-600 theme-transition">
+                                        <th class="text-left py-2 text-gray-700 dark:text-gray-300 theme-transition">Type</th>
+                                        <th class="text-left py-2 text-gray-700 dark:text-gray-300 theme-transition">Security</th>
+                                        <th class="text-left py-2 text-gray-700 dark:text-gray-300 theme-transition">Performance</th>
+                                        <th class="text-left py-2 text-gray-700 dark:text-gray-300 theme-transition">Compatibility</th>
+                                        <th class="text-left py-2 text-gray-700 dark:text-gray-300 theme-transition">Recommended</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-600 dark:text-gray-400 theme-transition">
+                                    <tr class="border-b border-gray-100 dark:border-gray-700 theme-transition">
+                                        <td class="py-2 font-medium">RSA</td>
+                                        <td class="py-2">Good (4096-bit)</td>
+                                        <td class="py-2">Slower</td>
+                                        <td class="py-2">Excellent</td>
+                                        <td class="py-2">Legacy systems</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100 dark:border-gray-700 theme-transition">
+                                        <td class="py-2 font-medium">Ed25519</td>
+                                        <td class="py-2">Excellent</td>
+                                        <td class="py-2">Fastest</td>
+                                        <td class="py-2">Modern systems</td>
+                                        <td class="py-2">
+                                            <span class="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded text-xs theme-transition">Recommended</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 font-medium">ECDSA</td>
+                                        <td class="py-2">Very Good</td>
+                                        <td class="py-2">Fast</td>
+                                        <td class="py-2">Good</td>
+                                        <td class="py-2">Balanced choice</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- SSH Key Generator -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-                    <div class="border-b border-gray-200 p-4">
-                        <h3 class="text-lg font-semibold text-gray-800">SSH Key</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition">
+                    <div class="border-b border-gray-200 dark:border-gray-600 p-4 theme-transition">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 theme-transition">SSH Key Configuration</h3>
                     </div>
                     
                     <div class="p-6">
@@ -126,106 +334,184 @@
                         <div class="grid md:grid-cols-2 gap-6 mb-6">
                             <!-- Type -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                                <select id="keyType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 theme-transition">Key Type</label>
+                                <select id="keyType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none theme-transition">
+                                    <option value="ed25519" selected>Ed25519 (Recommended)</option>
                                     <option value="rsa">RSA</option>
-                                    <option value="ed25519">Ed25519</option>
                                     <option value="ecdsa">ECDSA</option>
                                 </select>
+                                <div id="keyTypeStrength" class="mt-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 theme-transition">Security:</span>
+                                        <div class="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-1 theme-transition">
+                                            <div class="strength-bar bg-green-500" style="width: 95%"></div>
+                                        </div>
+                                        <span class="text-xs text-green-600 dark:text-green-400 theme-transition">Excellent</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Length -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Length</label>
-                                <select id="keyLength" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
-                                    <option value="2048">2048</option>
-                                    <option value="3072">3072</option>
-                                    <option value="4096">4096</option>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 theme-transition">Key Length</label>
+                                <select id="keyLength" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none theme-transition">
+                                    <!-- Options will be dynamically populated by JavaScript -->
                                 </select>
                             </div>
 
                             <!-- Comment -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Comment</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 theme-transition">Comment</label>
                                 <input 
                                     type="text" 
                                     id="comment" 
                                     placeholder="e.g. user@hostname or email@example.com"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none theme-transition"
                                 >
                             </div>
 
                             <!-- Passphrase -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Passphrase <span class="text-gray-500">(Optional)</span></label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 theme-transition">
+                                    Passphrase 
+                                    <span class="text-gray-500 dark:text-gray-400 theme-transition">(Optional but recommended)</span>
+                                </label>
                                 <input 
                                     type="password" 
                                     id="passphrase" 
                                     placeholder="Enter passphrase"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none theme-transition"
                                 >
                             </div>
                         </div>
 
                         <!-- Generate Button -->
                         <div class="flex justify-center mb-8">
-                            <button id="generateBtn" class="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
-                                Create Key
+                            <button id="generateBtn" class="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center space-x-2">
+                                <!-- Heroicons: key -->
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+                                </svg>
+                                <span>Generate SSH Key Pair</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Private Key Section -->
-                <div id="privateKeySection" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6" style="display: none;">
-                    <div class="border-b border-gray-200 p-4 flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-800">Private Key</h3>
-                        <button id="copyPrivateBtn" class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
-                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
-                            </svg>
-                            <span>Copy</span>
-                        </button>
+                <!-- Key Information -->
+                <div id="keyInfoSection" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition" style="display: none;">
+                    <div class="border-b border-gray-200 dark:border-gray-600 p-4 theme-transition">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 theme-transition">Key Information</h3>
                     </div>
                     <div class="p-6">
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                            <pre id="privateKeyDisplay" class="key-display text-gray-800 whitespace-pre-wrap"></pre>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400 theme-transition">Algorithm:</span>
+                                <span id="keyAlgorithm" class="font-medium text-gray-800 dark:text-gray-200 theme-transition">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400 theme-transition">Key Size:</span>
+                                <span id="keySize" class="font-medium text-gray-800 dark:text-gray-200 theme-transition">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400 theme-transition">Security Level:</span>
+                                <span id="securityLevel" class="font-medium text-green-600 dark:text-green-400 theme-transition">-</span>
+                            </div>
+                            <div class="mt-4">
+                                <span class="text-gray-600 dark:text-gray-400 theme-transition block mb-2">Fingerprint (SHA256):</span>
+                                <div id="fingerprint" class="font-mono text-xs bg-gray-100 dark:bg-gray-700 p-3 rounded border-l-4 border-blue-500 theme-transition break-all">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Private Key Section -->
+                <div id="privateKeySection" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition" style="display: none;">
+                    <div class="border-b border-gray-200 dark:border-gray-600 p-4 flex justify-between items-center theme-transition">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 theme-transition">Private Key</h3>
+                        <div class="flex space-x-2">
+                            <button id="copyPrivateBtn" class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-700 transition theme-transition">
+                                <!-- Heroicons: clipboard-document -->
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                            <button id="downloadPrivateBtn" class="inline-flex items-center space-x-2 px-4 py-2 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200 rounded-lg hover:bg-green-200 dark:hover:bg-green-700 transition theme-transition">
+                                <!-- Heroicons: arrow-down-tray -->
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                                </svg>
+                                <span>Download</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 theme-transition">
+                            <pre id="privateKeyDisplay" class="key-display text-gray-800 dark:text-gray-200 whitespace-pre-wrap theme-transition"></pre>
+                            <!-- Skeleton loader for private key -->
+                            <div id="privateKeySkeleton" class="hidden space-y-2">
+                                <div class="skeleton rounded h-4"></div>
+                                <div class="skeleton rounded h-4 w-4/5"></div>
+                                <div class="skeleton rounded h-4"></div>
+                                <div class="skeleton rounded h-4 w-3/4"></div>
+                                <div class="skeleton rounded h-4"></div>
+                                <div class="skeleton rounded h-4 w-5/6"></div>
+                                <div class="skeleton rounded h-4 w-2/3"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Public Key Section -->
-                <div id="publicKeySection" class="bg-white rounded-lg shadow-sm border border-gray-200" style="display: none;">
-                    <div class="border-b border-gray-200 p-4 flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-800">Public Key</h3>
-                        <button id="copyPublicBtn" class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
-                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
-                            </svg>
-                            <span>Copy</span>
-                        </button>
+                <div id="publicKeySection" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-6 theme-transition" style="display: none;">
+                    <div class="border-b border-gray-200 dark:border-gray-600 p-4 flex justify-between items-center theme-transition">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 theme-transition">Public Key</h3>
+                        <div class="flex space-x-2">
+                            <button id="copyPublicBtn" class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-700 transition theme-transition">
+                                <!-- Heroicons: clipboard-document -->
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                            <button id="downloadPublicBtn" class="inline-flex items-center space-x-2 px-4 py-2 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200 rounded-lg hover:bg-green-200 dark:hover:bg-green-700 transition theme-transition">
+                                <!-- Heroicons: arrow-down-tray -->
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                                </svg>
+                                <span>Download</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="p-6">
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                            <pre id="publicKeyDisplay" class="key-display text-gray-800 whitespace-pre-wrap"></pre>
+                        <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 theme-transition">
+                            <pre id="publicKeyDisplay" class="key-display text-gray-800 dark:text-gray-200 whitespace-pre-wrap theme-transition"></pre>
+                            <!-- Skeleton loader for public key -->
+                            <div id="publicKeySkeleton" class="hidden space-y-2">
+                                <div class="skeleton rounded h-4 w-3/4"></div>
+                                <div class="skeleton rounded h-4 w-5/6"></div>
+                                <div class="skeleton rounded h-4 w-1/2"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Warning Message -->
-                <div id="warningMessage" class="mt-6 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded" style="display: none;">
+                <!-- Security Recommendations -->
+                <div id="warningMessage" class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 px-4 py-3 rounded theme-transition" style="display: none;">
                     <div class="flex items-start">
                         <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                         </svg>
                         <div>
-                            <p class="font-medium">⚠️ Security Warning</p>
-                            <p class="text-sm mt-1">
-                                Keep your private key secure and never share it. Store it in a safe location like ~/.ssh/ and set appropriate file permissions (chmod 600).
-                                The public key can be safely shared and should be added to servers where you want SSH access.
-                            </p>
+                            <p class="font-medium">Security Best Practices</p>
+                            <ul class="text-sm mt-1 space-y-1">
+                                <li>• Keep your private key secure and never share it</li>
+                                <li>• Store it in ~/.ssh/ with permissions 600 (chmod 600 ~/.ssh/id_*)</li>
+                                <li>• Use a strong passphrase to protect your private key</li>
+                                <li>• The public key can be safely shared and added to servers</li>
+                                <li>• Regularly rotate your SSH keys (recommended: annually)</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -234,136 +520,459 @@
     </div>
 
     <script>
-        // Elements
-        const keyType = document.getElementById('keyType');
-        const keyLength = document.getElementById('keyLength');
-        const passphrase = document.getElementById('passphrase');
-        const generateBtn = document.getElementById('generateBtn');
-        const privateKeySection = document.getElementById('privateKeySection');
-        const publicKeySection = document.getElementById('publicKeySection');
-        const privateKeyDisplay = document.getElementById('privateKeyDisplay');
-        const publicKeyDisplay = document.getElementById('publicKeyDisplay');
-        const warningMessage = document.getElementById('warningMessage');
-        const copyPrivateBtn = document.getElementById('copyPrivateBtn');
-        const copyPublicBtn = document.getElementById('copyPublicBtn');
-
-        // Update length options based on key type
-        keyType.addEventListener('change', function() {
-            const type = this.value;
-            keyLength.innerHTML = '';
+        // Theme Management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             
-            if (type === 'rsa') {
-                keyLength.innerHTML = `
-                    <option value="2048">2048</option>
-                    <option value="3072">3072</option>
-                    <option value="4096">4096</option>
-                `;
-            } else if (type === 'ed25519') {
-                keyLength.innerHTML = `<option value="256">256</option>`;
-                keyLength.disabled = true;
-            } else if (type === 'ecdsa') {
-                keyLength.innerHTML = `
-                    <option value="256">256</option>
-                    <option value="384">384</option>
-                    <option value="521">521</option>
-                `;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+                updateDarkModeIcon(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateDarkModeIcon(false);
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                updateDarkModeIcon(false);
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                updateDarkModeIcon(true);
+            }
+        }
+
+        function updateDarkModeIcon(isDark) {
+            const icon = document.getElementById('darkModeIcon');
+            if (isDark) {
+                icon.innerHTML = '<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>';
+            } else {
+                icon.innerHTML = '<path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>';
+            }
+        }
+
+        // Elements - will be initialized when DOM is ready
+        let keyType, keyLength, passphrase, generateBtn, privateKeySection, publicKeySection, 
+            keyInfoSection, privateKeyDisplay, publicKeyDisplay, warningMessage, 
+            copyPrivateBtn, copyPublicBtn, downloadPrivateBtn, downloadPublicBtn, darkModeToggle;
+
+        // Step progress elements - will be initialized when DOM is ready
+        let currentStepSpan, progressBar, stepIndicators;
+
+        // Generated keys storage
+        let generatedKeys = {
+            private: '',
+            public: '',
+            fingerprint: '',
+            type: '',
+            size: ''
+        };
+
+        // Initialize everything when DOM is ready
+        function initializeElements() {
+            // Get all DOM elements
+            keyType = document.getElementById('keyType');
+            keyLength = document.getElementById('keyLength');
+            passphrase = document.getElementById('passphrase');
+            generateBtn = document.getElementById('generateBtn');
+            privateKeySection = document.getElementById('privateKeySection');
+            publicKeySection = document.getElementById('publicKeySection');
+            keyInfoSection = document.getElementById('keyInfoSection');
+            privateKeyDisplay = document.getElementById('privateKeyDisplay');
+            publicKeyDisplay = document.getElementById('publicKeyDisplay');
+            warningMessage = document.getElementById('warningMessage');
+            copyPrivateBtn = document.getElementById('copyPrivateBtn');
+            copyPublicBtn = document.getElementById('copyPublicBtn');
+            downloadPrivateBtn = document.getElementById('downloadPrivateBtn');
+            downloadPublicBtn = document.getElementById('downloadPublicBtn');
+            darkModeToggle = document.getElementById('darkModeToggle');
+            
+            // Step progress elements
+            currentStepSpan = document.getElementById('currentStep');
+            progressBar = document.getElementById('progressBar');
+            stepIndicators = document.querySelectorAll('.step-indicator');
+            
+            // Check if all critical elements exist
+            if (!keyType || !keyLength) {
+                console.error('Critical elements not found');
+                return false;
             }
             
-            if (type !== 'ed25519') {
-                keyLength.disabled = false;
-            }
-        });
+            console.log('Elements initialized successfully');
+            return true;
+        }
 
-        // Generate SSH key pair
-        generateBtn.addEventListener('click', async function() {
-            const type = keyType.value;
-            const length = keyLength.value;
-            const passphraseValue = passphrase.value;
-            const commentValue = document.getElementById('comment').value || 'noname';
+        // Initialize theme
+        initTheme();
 
-            // Show loading state
-            const originalText = this.textContent;
-            this.textContent = 'Generating...';
-            this.disabled = true;
+        // Update step progress
+        function updateStepProgress(step) {
+            currentStepSpan.textContent = step;
+            const progressPercentage = (step / 4) * 100;
+            progressBar.style.width = progressPercentage + '%';
 
-            try {
-                // Send request to backend
-                const response = await fetch('/generate-ssh-key', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        type: type,
-                        length: parseInt(length),
-                        passphrase: passphraseValue,
-                        comment: commentValue
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to generate SSH key');
-                }
-
-                const data = await response.json();
-
-                // Display the keys
-                privateKeyDisplay.textContent = data.private_key;
-                publicKeyDisplay.textContent = data.public_key;
-
-                // Show the sections
-                privateKeySection.style.display = 'block';
-                publicKeySection.style.display = 'block';
-                warningMessage.style.display = 'block';
-
-                // Scroll to results
-                privateKeySection.scrollIntoView({ behavior: 'smooth' });
-
-            } catch (error) {
-                alert('Error generating SSH key: ' + error.message);
-            } finally {
-                // Reset button
-                this.textContent = originalText;
-                this.disabled = false;
-            }
-        });
-
-        // Copy functions
-        copyPrivateBtn.addEventListener('click', function() {
-            copyToClipboard(privateKeyDisplay.textContent, this);
-        });
-
-        copyPublicBtn.addEventListener('click', function() {
-            copyToClipboard(publicKeyDisplay.textContent, this);
-        });
-
-        function copyToClipboard(text, button) {
-            navigator.clipboard.writeText(text).then(() => {
-                const originalText = button.querySelector('span').textContent;
-                button.querySelector('span').textContent = 'Copied!';
-                button.classList.add('bg-green-100', 'text-green-700');
-                button.classList.remove('bg-blue-100', 'text-blue-700');
+            stepIndicators.forEach((indicator, index) => {
+                const stepNumber = index + 1;
+                const circle = indicator.querySelector('div');
                 
-                setTimeout(() => {
-                    button.querySelector('span').textContent = originalText;
-                    button.classList.remove('bg-green-100', 'text-green-700');
-                    button.classList.add('bg-blue-100', 'text-blue-700');
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                alert('Failed to copy to clipboard');
+                if (stepNumber <= step) {
+                    circle.classList.remove('bg-gray-300', 'dark:bg-gray-600', 'text-gray-600', 'dark:text-gray-400');
+                    circle.classList.add('bg-blue-600', 'text-white');
+                    indicator.classList.add('active');
+                } else {
+                    circle.classList.remove('bg-blue-600', 'text-white');
+                    circle.classList.add('bg-gray-300', 'dark:bg-gray-600', 'text-gray-600', 'dark:text-gray-400');
+                    indicator.classList.remove('active');
+                }
             });
         }
 
-        // Initialize key length options
-        keyType.dispatchEvent(new Event('change'));
+        // Update security strength display
+        function updateSecurityStrength(type) {
+            const strengthBar = document.querySelector('.strength-bar');
+            const strengthText = strengthBar ? strengthBar.parentElement.querySelector('span:last-child') : null;
+            
+            if (!strengthBar || !strengthText) {
+                console.log('Security strength elements not found, skipping update');
+                return;
+            }
+            
+            switch(type) {
+                case 'ed25519':
+                    strengthBar.style.width = '95%';
+                    strengthBar.className = 'strength-bar bg-green-500';
+                    strengthText.textContent = 'Excellent';
+                    strengthText.className = 'text-xs text-green-600 dark:text-green-400 theme-transition';
+                    break;
+                case 'ecdsa':
+                    strengthBar.style.width = '85%';
+                    strengthBar.className = 'strength-bar bg-blue-500';
+                    strengthText.textContent = 'Very Good';
+                    strengthText.className = 'text-xs text-blue-600 dark:text-blue-400 theme-transition';
+                    break;
+                case 'rsa':
+                    strengthBar.style.width = '75%';
+                    strengthBar.className = 'strength-bar bg-yellow-500';
+                    strengthText.textContent = 'Good';
+                    strengthText.className = 'text-xs text-yellow-600 dark:text-yellow-400 theme-transition';
+                    break;
+            }
+        }
+
+
+        // Generate SSH fingerprint
+        function generateFingerprint(publicKey) {
+            const hash = CryptoJS.SHA256(publicKey).toString();
+            return 'SHA256:' + btoa(hash.match(/.{2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('')).replace(/=+$/, '');
+        }
+
+
+        // Update key information display
+        function updateKeyInfo(type, length, publicKey) {
+            document.getElementById('keyAlgorithm').textContent = type.toUpperCase();
+            document.getElementById('keySize').textContent = length + ' bits';
+            
+            let securityLevel = 'Good';
+            if (type === 'ed25519' || (type === 'rsa' && parseInt(length) >= 4096)) {
+                securityLevel = 'Excellent';
+            } else if (type === 'ecdsa' || (type === 'rsa' && parseInt(length) >= 3072)) {
+                securityLevel = 'Very Good';
+            }
+            
+            document.getElementById('securityLevel').textContent = securityLevel;
+            
+            const fingerprint = generateFingerprint(publicKey);
+            document.getElementById('fingerprint').textContent = fingerprint;
+            
+            keyInfoSection.style.display = 'block';
+            keyInfoSection.classList.add('animate-slide-up');
+        }
+
+        // Note: Event listeners moved to setupEventListeners function
+        // All duplicate event listeners have been moved to proper initialization
+
+        // Initialize event listeners
+        function setupEventListeners() {
+            // Dark mode toggle
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', toggleTheme);
+            }
+            
+            // Update length options based on key type
+            keyType.addEventListener('change', function() {
+                const type = this.value;
+                console.log('Key type changed to:', type);
+                console.log('Current keyLength value before change:', keyLength.value);
+                
+                // Use the centralized function
+                initializeKeyLengthOptions(type);
+                
+                // Check if configuration is complete
+                checkConfigurationComplete();
+                
+                // Trigger change event
+                keyLength.dispatchEvent(new Event('change'));
+                console.log('Final keyLength value after change:', keyLength.value);
+            });
+
+            // Check configuration when key length changes
+            keyLength.addEventListener('change', function() {
+                checkConfigurationComplete();
+            });
+            
+            // Generate SSH key pair
+            if (generateBtn) {
+                generateBtn.addEventListener('click', async function() {
+                    const type = keyType.value;
+                    const length = keyLength.value;
+                    const passphraseValue = passphrase.value;
+                    const commentValue = document.getElementById('comment').value || 'noname';
+
+                    updateStepProgress(3);
+
+                    // Show skeleton loading states
+                    const privateKeySkeleton = document.getElementById('privateKeySkeleton');
+                    const publicKeySkeleton = document.getElementById('publicKeySkeleton');
+                    
+                    privateKeySkeleton.classList.remove('hidden');
+                    publicKeySkeleton.classList.remove('hidden');
+                    privateKeyDisplay.textContent = '';
+                    publicKeyDisplay.textContent = '';
+
+                    // Show loading state
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = `
+                        <!-- Heroicons: arrow-path (loading spinner) -->
+                        <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                        </svg>
+                        <span>Generating Keys...</span>
+                    `;
+                    this.disabled = true;
+
+                    try {
+                        // Send request to backend
+                        const response = await fetch('/generate-ssh-key', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                type: type,
+                                length: parseInt(length),
+                                passphrase: passphraseValue,
+                                comment: commentValue
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed to generate SSH key');
+                        }
+
+                        const data = await response.json();
+
+                        // Store generated keys
+                        generatedKeys = {
+                            private: data.private_key,
+                            public: data.public_key,
+                            fingerprint: data.fingerprint,
+                            type: type,
+                            size: length
+                        };
+
+                        // Hide skeleton loaders
+                        privateKeySkeleton.classList.add('hidden');
+                        publicKeySkeleton.classList.add('hidden');
+
+                        // Display keys
+                        privateKeyDisplay.textContent = data.private_key;
+                        publicKeyDisplay.textContent = data.public_key;
+                        
+                        // Update key information
+                        updateKeyInfo(type, length, data.public_key);
+                        
+                        // Show sections
+                        privateKeySection.style.display = 'block';
+                        publicKeySection.style.display = 'block';
+                        
+                        updateStepProgress(4);
+
+                    } catch (error) {
+                        console.error('Error generating SSH key:', error);
+                        warningMessage.textContent = 'Error generating SSH key. Please try again.';
+                        warningMessage.style.display = 'block';
+                    } finally {
+                        // Restore button
+                        this.innerHTML = originalContent;
+                        this.disabled = false;
+                    }
+                });
+            }
+
+            // Copy buttons
+            if (copyPrivateBtn) {
+                copyPrivateBtn.addEventListener('click', function() {
+                    copyToClipboard(generatedKeys.private, this);
+                });
+            }
+
+            if (copyPublicBtn) {
+                copyPublicBtn.addEventListener('click', function() {
+                    copyToClipboard(generatedKeys.public, this);
+                });
+            }
+
+            // Download buttons
+            if (downloadPrivateBtn) {
+                downloadPrivateBtn.addEventListener('click', function() {
+                    const filename = `id_${generatedKeys.type}`;
+                    downloadFile(generatedKeys.private, filename);
+                });
+            }
+
+            if (downloadPublicBtn) {
+                downloadPublicBtn.addEventListener('click', function() {
+                    const filename = `id_${generatedKeys.type}.pub`;
+                    downloadFile(generatedKeys.public, filename);
+                });
+            }
+            
+            // Helper functions
+            function copyToClipboard(text, button) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalContent = button.innerHTML;
+                    button.innerHTML = `
+                        <!-- Heroicons: check -->
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12.75l6 6 9-13.5"/>
+                        </svg>
+                        <span>Copied!</span>
+                    `;
+                    button.classList.add('bg-green-100', 'dark:bg-green-800', 'text-green-700', 'dark:text-green-200', 'animate-pulse-success');
+                    button.classList.remove('bg-blue-100', 'dark:bg-blue-800', 'text-blue-700', 'dark:text-blue-200');
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                        button.classList.remove('bg-green-100', 'dark:bg-green-800', 'text-green-700', 'dark:text-green-200', 'animate-pulse-success');
+                        button.classList.add('bg-blue-100', 'dark:bg-blue-800', 'text-blue-700', 'dark:text-blue-200');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+            }
+
+            function downloadFile(content, filename) {
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        }
+
+        // Initialize when DOM is ready
+        function initializePage() {
+            console.log('Initializing page...');
+            
+            if (initializeElements()) {
+                setupEventListeners();
+                
+                // Initialize key length options based on current key type selection
+                console.log('Initializing key length dropdown for default key type');
+                const selectedKeyType = keyType.value;
+                console.log('Current key type:', selectedKeyType);
+                
+                // Manually trigger the initialization for the current key type
+                initializeKeyLengthOptions(selectedKeyType);
+                
+                // Initialize step progress
+                updateStepProgress(1);
+                
+                // Check if configuration is complete after initialization
+                setTimeout(() => {
+                    checkConfigurationComplete();
+                }, 100);
+                
+                console.log('Page initialization complete');
+            } else {
+                console.log('Retrying initialization...');
+                setTimeout(initializePage, 100);
+            }
+        }
+
+        // Function to initialize key length options
+        function initializeKeyLengthOptions(type) {
+            console.log('Initializing key length options for type:', type);
+            
+            // Clear current options
+            keyLength.innerHTML = '';
+            keyLength.disabled = false;
+            
+            // Create options using DOM methods
+            function createOption(value, text, selected = false) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = text;
+                option.selected = selected;
+                return option;
+            }
+            
+            // Populate options based on key type
+            if (type === 'rsa') {
+                keyLength.appendChild(createOption('2048', '2048 bits'));
+                keyLength.appendChild(createOption('3072', '3072 bits'));
+                keyLength.appendChild(createOption('4096', '4096 bits (Recommended)', true));
+                keyLength.disabled = false;
+                console.log('RSA options added, selected value:', keyLength.value);
+            } else if (type === 'ed25519') {
+                keyLength.appendChild(createOption('256', '256 bits (Fixed for Ed25519)', true));
+                keyLength.disabled = true;
+                console.log('Ed25519 option added, selected value:', keyLength.value);
+            } else if (type === 'ecdsa') {
+                keyLength.appendChild(createOption('256', '256 bits (P-256)'));
+                keyLength.appendChild(createOption('384', '384 bits (P-384)'));
+                keyLength.appendChild(createOption('521', '521 bits (P-521) - Recommended', true));
+                keyLength.disabled = false;
+                console.log('ECDSA options added, selected value:', keyLength.value);
+            }
+            
+            // Update security strength display
+            updateSecurityStrength(type);
+            
+            console.log('Key length dropdown initialized successfully');
+        }
+
+        // Function to check if configuration is complete and update progress
+        function checkConfigurationComplete() {
+            const hasKeyType = keyType.value !== '';
+            const hasKeyLength = keyLength.value !== '';
+            
+            if (hasKeyType && hasKeyLength) {
+                updateStepProgress(2);
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePage);
+        } else {
+            initializePage();
+        }
     </script>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-6 mt-12">
+    <footer class="bg-gray-800 dark:bg-gray-900 text-white py-6 mt-12 theme-transition">
         <div class="container mx-auto px-4 text-center">
-            <p class="text-sm text-gray-300 mb-2">© 2024 Moonkite Labs Sdn. Bhd. - Professional IT & Security Solutions</p>
-            <p class="text-xs text-gray-400">Founded by <a href="https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/" class="hover:text-gray-200 underline" target="_blank">Nazri Abdullah</a>, Senior Software Engineer & Cybersecurity Expert</p>
+            <p class="text-sm text-gray-300 dark:text-gray-400 mb-2 theme-transition">© 2024 Moonkite Labs Sdn. Bhd. - Professional IT & Security Solutions</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 theme-transition">Founded by <a href="https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/" class="hover:text-gray-200 dark:hover:text-gray-300 underline theme-transition" target="_blank">Nazri Abdullah</a>, Senior Software Engineer & Cybersecurity Expert</p>
         </div>
     </footer>
 </body>
