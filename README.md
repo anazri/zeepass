@@ -52,6 +52,17 @@
 - **Error handling** for invalid Base64 input
 - **Clean, intuitive interface**
 
+### 🎨 **User Interface & Experience**
+- **Modern Landing Page** with comprehensive feature overview
+- **Dark/Light Theme Toggle** with system preference detection
+- **Responsive Design** optimized for all device sizes
+- **About Us Section** featuring:
+  - Our Mission: Making advanced cryptography accessible to everyone
+  - Our Expertise: Built by security experts and cryptography specialists  
+  - Our Commitment: Continuous innovation and transparency in security
+- **Professional Contact Forms** for enterprise deployment inquiries
+- **Smooth Animations** and glassmorphism design effects
+
 ## 🏗️ Architecture
 
 ### **Backend (Go)**
@@ -68,14 +79,24 @@ internal/
     └── chat.go      # Real-time chat
 ```
 
-### **Frontend (HTMX + TailwindCSS)**
+### **Frontend (HTMX + TailwindCSS + JavaScript)**
 ```
-templates/           # HTML templates
-static/
-├── css/            # Custom styles
-├── js/             # JavaScript utilities
-└── images/         # Static assets
+templates/           # HTML templates with responsive design
+├── index.html      # Landing page with dark mode support
+├── base64.html     # Base64 encoding/decoding tool
+├── chat-encryption.html  # Real-time encrypted chat
+├── file-encryption.html  # File upload and encryption
+├── password-generator.html  # Password generation tool
+├── ssh-key.html    # SSH key generation tool
+└── text-encryption.html   # Text encryption and sharing
 ```
+
+**Frontend Features:**
+- **Dark/Light Theme Toggle** with localStorage persistence
+- **Responsive Design** optimized for mobile and desktop
+- **System Theme Detection** (follows OS preferences)
+- **Smooth Animations** and transitions
+- **Modern UI Components** with glassmorphism effects
 
 ### **Storage (Redis)**
 - **Encrypted data storage** with automatic TTL
@@ -95,7 +116,7 @@ static/
 1. **Clone the repository**
    ```bash
    git clone https://github.com/anazri/zeepass.git
-   cd zeepass/src
+   cd zeepass
    ```
 
 2. **Install dependencies**
@@ -157,7 +178,11 @@ Use a cryptographically secure 32-byte key in production.
 
 ### **Development**
 ```bash
+# Run directly
 go run cmd/server/main.go
+
+# Or use Air for live reloading (recommended)
+air
 ```
 
 ### **Production Build**
@@ -173,7 +198,7 @@ FROM golang:1.24.2-alpine AS builder
 WORKDIR /app
 COPY go.* ./
 RUN go mod download
-COPY src .
+COPY . .
 RUN go build -o zeepass cmd/server/main.go
 
 FROM alpine:latest
@@ -181,7 +206,6 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=builder /app/zeepass .
 COPY --from=builder /app/templates ./templates
-COPY --from=builder /app/static ./static
 EXPOSE 8080
 CMD ["./zeepass"]
 ```
@@ -214,10 +238,11 @@ Senior Software Engineer & Cybersecurity Expert
 ## 🛠️ Tech Stack
 
 - **Backend**: Go 1.24.2
-- **Frontend**: HTMX, TailwindCSS
+- **Frontend**: HTMX, TailwindCSS, Vanilla JavaScript
 - **Database**: Redis
 - **Encryption**: AES-256-GCM
 - **WebSockets**: Gorilla WebSocket
+- **Development**: Air (live reloading)
 - **Deployment**: Docker-ready
 
 ## 📊 Project Status
@@ -228,6 +253,8 @@ Senior Software Engineer & Cybersecurity Expert
 - ✅ **Password Generator** - Complete
 - ✅ **SSH Key Generator** - Complete
 - ✅ **Base64 Tools** - Complete
+- ✅ **Dark/Light Theme** - Complete
+- ✅ **Responsive Design** - Complete
 - 🔄 **User Authentication** - Planned
 - 🔄 **API Endpoints** - Planned
 - 🔄 **Mobile App** - Planned
