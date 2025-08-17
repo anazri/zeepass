@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SSH Key Generator - ZeePass</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23667eea'%3E%3Cpath fill-rule='evenodd' d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 616 0z' clip-rule='evenodd'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script>
@@ -159,23 +160,15 @@
                 <span class="mx-2">•</span>
                 <span class="text-white">SSH Key</span>
             </nav>
-            
+
             <div class="flex items-center space-x-2">
                 <!-- Dark Mode Toggle -->
-                <button id="darkModeToggle" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition" aria-label="Toggle dark mode">
-                    <!-- Heroicons: sun (light mode) -->
-                    <svg id="lightModeIcon" class="w-4 h-4 transition-transform dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+                <button id="themeToggle" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition" aria-label="Toggle dark mode">
+                    <svg id="sunIcon" class="w-4 h-4 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
                     </svg>
-                    <!-- Heroicons: moon (dark mode) -->
-                    <svg id="darkModeIcon" class="w-4 h-4 transition-transform hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
-                    </svg>
-                </button>
-                <button class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition">
-                    <!-- Heroicons: question-mark-circle -->
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/>
+                    <svg id="moonIcon" class="w-4 h-4 dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
                     </svg>
                 </button>
             </div>
@@ -527,10 +520,6 @@
             
             if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
                 document.documentElement.classList.add('dark');
-                updateDarkModeIcon(true);
-            } else {
-                document.documentElement.classList.remove('dark');
-                updateDarkModeIcon(false);
             }
         }
 
@@ -540,27 +529,17 @@
             if (isDark) {
                 document.documentElement.classList.remove('dark');
                 localStorage.setItem('theme', 'light');
-                updateDarkModeIcon(false);
             } else {
                 document.documentElement.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
-                updateDarkModeIcon(true);
             }
         }
 
-        function updateDarkModeIcon(isDark) {
-            const icon = document.getElementById('darkModeIcon');
-            if (isDark) {
-                icon.innerHTML = '<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>';
-            } else {
-                icon.innerHTML = '<path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>';
-            }
-        }
 
         // Elements - will be initialized when DOM is ready
         let keyType, keyLength, passphrase, generateBtn, privateKeySection, publicKeySection, 
             keyInfoSection, privateKeyDisplay, publicKeyDisplay, warningMessage, 
-            copyPrivateBtn, copyPublicBtn, downloadPrivateBtn, downloadPublicBtn, darkModeToggle;
+            copyPrivateBtn, copyPublicBtn, downloadPrivateBtn, downloadPublicBtn, themeToggle;
 
         // Step progress elements - will be initialized when DOM is ready
         let currentStepSpan, progressBar, stepIndicators;
@@ -591,7 +570,7 @@
             copyPublicBtn = document.getElementById('copyPublicBtn');
             downloadPrivateBtn = document.getElementById('downloadPrivateBtn');
             downloadPublicBtn = document.getElementById('downloadPublicBtn');
-            darkModeToggle = document.getElementById('darkModeToggle');
+            themeToggle = document.getElementById('themeToggle');
             
             // Step progress elements
             currentStepSpan = document.getElementById('currentStep');
@@ -700,8 +679,8 @@
         // Initialize event listeners
         function setupEventListeners() {
             // Dark mode toggle
-            if (darkModeToggle) {
-                darkModeToggle.addEventListener('click', toggleTheme);
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
             }
             
             // Update length options based on key type
