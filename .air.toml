@@ -1,0 +1,13 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/main ./cmd/server"
+bin = "./tmp/main"
+full_bin = "./tmp/main"
+include_ext = ["go", "tpl", "tmpl", "html", "css", "js", "html"]
+exclude_dir = ["assets", "tmp", "vendor", "testdata", "node_modules", ".git"]
+log = "tmp/build-errors.log"
+
+[log]
+time = true
