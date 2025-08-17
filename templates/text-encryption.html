@@ -83,7 +83,7 @@
 <body class="bg-gray-50 dark:bg-gray-900 theme-transition">
     <!-- Header -->
     <header class="gradient-bg text-white shadow-lg">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <a href="/" class="flex items-center space-x-2">
                     <div class="w-8 h-8 bg-white rounded flex items-center justify-center">
@@ -91,7 +91,7 @@
                             <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                         </svg>
                     </div>
-                    <h1 class="text-xl font-bold">ZeePass</h1>
+                    <h1 class="text-lg md:text-xl font-bold">ZeePass</h1>
                 </a>
             </div>
             
@@ -115,9 +115,27 @@
         </div>
     </header>
 
+    <!-- Mobile Menu Button -->
+    <div class="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 theme-transition">
+        <button id="mobileMenuToggle" class="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <span class="font-medium">Menu</span>
+        </button>
+    </div>
+
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-white dark:bg-gray-800 shadow-lg theme-transition">
+        <div id="sidebar" class="fixed md:relative inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg theme-transition transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+            <!-- Mobile Close Button -->
+            <div class="md:hidden flex justify-end p-4">
+                <button id="closeMobileMenu" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
             <nav class="py-4">
                 <a href="/text-encryption" class="flex items-center space-x-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 sidebar-active theme-transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -166,12 +184,15 @@
             
         </div>
 
+        <!-- Mobile Overlay -->
+        <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden hidden"></div>
+
         <!-- Main Content -->
-        <div class="flex-1 p-8">
+        <div class="flex-1 p-4 md:p-8">
             <div class="max-w-4xl mx-auto">
                 <!-- Page Header -->
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 theme-transition">Text Encryption</h2>
+                <div class="mb-6 md:mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 theme-transition">Text Encryption</h2>
                     <p class="text-gray-600 dark:text-gray-400 theme-transition">Write any text to be encrypted</p>
                 </div>
 
@@ -196,7 +217,7 @@
                         </button>
                         
                         <div id="explanationContent" class="hidden mt-4 pt-4 border-t border-blue-200 dark:border-blue-700 theme-transition">
-                            <div class="grid md:grid-cols-2 gap-6">
+                            <div class="grid md:grid-cols-2 gap-6 text-sm md:text-base">
                                 <!-- Process Steps -->
                                 <div>
                                     <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-3 theme-transition">Simple Steps:</h4>
@@ -293,15 +314,15 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex justify-end space-x-2 mb-6">
-                    <button id="pasteBtn" class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition theme-transition">
+                <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-2 mb-6">
+                    <button id="pasteBtn" class="inline-flex items-center justify-center space-x-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition theme-transition">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z"/>
                             <path d="M3 5a2 2 0 012-2 3 3 0 003 3h6a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
                         </svg>
                         <span>Paste</span>
                     </button>
-                    <button id="clearBtn" class="inline-flex items-center space-x-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition theme-transition">
+                    <button id="clearBtn" class="inline-flex items-center justify-center space-x-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition theme-transition">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
                         </svg>
@@ -319,7 +340,7 @@
                         
                         <!-- Formatting Toolbar -->
                         <div class="border-b border-gray-200 dark:border-gray-600 p-3 theme-transition">
-                            <div class="flex items-center space-x-1">
+                            <div class="flex items-center space-x-1 overflow-x-auto pb-2 md:pb-0">
                                 <button type="button" class="toolbar-btn p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 theme-transition" data-format="bold">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M3 4a1 1 0 011-1h5.5a2.5 2.5 0 010 5H6v2h4.5a2.5 2.5 0 010 5H4a1 1 0 01-1-1V4zm2 4h3.5a.5.5 0 000-1H5v1zm0 4h4.5a.5.5 0 000-1H5v1z"/>
@@ -584,6 +605,38 @@
         
         // Add event listener for theme toggle
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+        // Mobile menu functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        function showMobileMenu() {
+            sidebar.classList.remove('-translate-x-full');
+            mobileOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideMobileMenu() {
+            sidebar.classList.add('-translate-x-full');
+            mobileOverlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        mobileMenuToggle.addEventListener('click', showMobileMenu);
+        closeMobileMenu.addEventListener('click', hideMobileMenu);
+        mobileOverlay.addEventListener('click', hideMobileMenu);
+
+        // Close mobile menu when clicking on navigation links
+        const navLinks = sidebar.querySelectorAll('a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) {
+                    hideMobileMenu();
+                }
+            });
+        });
 
         // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {

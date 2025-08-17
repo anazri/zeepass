@@ -195,8 +195,11 @@
             
         </div>
 
+        <!-- Mobile Overlay -->
+        <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden hidden"></div>
+
         <!-- Main Content -->
-        <div class="flex-1 p-8">
+        <div class="flex-1 p-4 md:p-8">
             <div class="max-w-6xl mx-auto">
                 <!-- Page Header -->
                 <div class="mb-8">
@@ -686,6 +689,27 @@
         // Initialize theme and add event listener
         initTheme();
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        
+        // Mobile menu functionality
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+        
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+        
+        // Mobile menu event listeners
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
+        document.getElementById('mobileOverlay').addEventListener('click', closeMobileMenu);
         
         // Typing indicator functionality
         let typingTimer;
