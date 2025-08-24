@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23667eea'%3E%3Cpath fill-rule='evenodd' d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z' clip-rule='evenodd'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .theme-transition {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 theme-transition">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-white rounded flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold"><a href="/" class="hover:text-blue-200 transition">ZeePass</a></h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="/" class="hover:text-blue-200 transition">Home</a>
+                <a href="#survey" class="hover:text-blue-200 transition">Survey</a>
+                <a href="https://github.com/anazri/zeepass" class="hover:text-blue-200 transition" target="_blank" rel="noopener">GitHub</a>
+            </nav>
+            <div class="flex items-center space-x-2">
+                <button id="themeToggle" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition" title="Toggle dark mode">
+                    <svg id="sunIcon" class="w-4 h-4 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+                    </svg>
+                    <svg id="moonIcon" class="w-4 h-4 dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Help Us Improve ZeePass</h2>
+            <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+                Your feedback shapes our roadmap. Take our quick 2-minute survey and help us build the security tools you need.
+            </p>
+        </div>
+    </section>
+
+    <!-- Survey Section -->
+    <section id="survey" class="py-16 bg-gray-50 dark:bg-gray-900 theme-transition">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <!-- Quick Feedback Buttons -->
+                <div class="grid md:grid-cols-3 gap-6 mb-12">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center border border-gray-200 dark:border-gray-700 hover:shadow-lg dark:hover:shadow-gray-900/50 transition duration-300 theme-transition cursor-pointer" onclick="scrollToSurvey()">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold mb-2 text-gray-800 dark:text-gray-100">💡 Feature Request</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Suggest new tools or improvements</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center border border-gray-200 dark:border-gray-700 hover:shadow-lg dark:hover:shadow-gray-900/50 transition duration-300 theme-transition cursor-pointer" onclick="scrollToSurvey()">
+                        <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold mb-2 text-gray-800 dark:text-gray-100">🐛 Bug Report</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Report issues or unexpected behavior</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center border border-gray-200 dark:border-gray-700 hover:shadow-lg dark:hover:shadow-gray-900/50 transition duration-300 theme-transition cursor-pointer" onclick="scrollToSurvey()">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold mb-2 text-gray-800 dark:text-gray-100">💬 General Feedback</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Share your thoughts and experiences</p>
+                    </div>
+                </div>
+
+                <!-- Survey Form -->
+                <div id="surveyForm" class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 theme-transition">
+                    <div class="text-center mb-8">
+                        <h4 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Quick Survey</h4>
+                        <p class="text-gray-600 dark:text-gray-300">Help us understand how to make ZeePass better for you</p>
+                    </div>
+
+                    <form action="/feedback" method="POST" class="space-y-6">
+                        <!-- Question 1: Likelihood to Use -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+                                1. How likely are you to use ZeePass for your security needs?
+                            </label>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="likelihood" value="very_likely" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Very likely</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="likelihood" value="somewhat_likely" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Somewhat likely</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="likelihood" value="neutral" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Neutral</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="likelihood" value="unlikely" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Unlikely</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="likelihood" value="very_unlikely" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Very unlikely</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 2: Tool Interest -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+                                2. Which ZeePass tools interest you most? (Select all that apply)
+                            </label>
+                            <div class="grid md:grid-cols-2 gap-2">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="tools" value="text_encryption" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Text Encryption</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="tools" value="file_encryption" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">File Encryption</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="tools" value="encrypted_chat" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Encrypted Chat</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="tools" value="password_generator" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Password Generator</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="tools" value="ssh_key" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">SSH Key Generator</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="tools" value="base64" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Base64 Tools</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 3: Use Case -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+                                3. What's your primary use case?
+                            </label>
+                            <select name="use_case" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
+                                <option value="">Select your primary use case</option>
+                                <option value="personal_privacy">Personal privacy & security</option>
+                                <option value="team_collaboration">Team/work collaboration</option>
+                                <option value="development_it">Development & IT tasks</option>
+                                <option value="sensitive_sharing">Sharing sensitive information</option>
+                                <option value="learning">Learning about encryption</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Question 4: Concerns -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+                                4. What concerns you most about online security tools?
+                            </label>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="concerns" value="data_privacy" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Data privacy & trust</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="concerns" value="ease_of_use" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Ease of use</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="concerns" value="feature_completeness" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Feature completeness</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="concerns" value="reliability" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Reliability & uptime</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="concerns" value="cost" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Cost</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="concerns" value="other" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Other</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 5: Feature Request -->
+                        <div>
+                            <label for="feature_request" class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+                                5. What feature would you want us to add next?
+                            </label>
+                            <textarea name="feature_request" rows="3" placeholder="Describe any features you'd like to see..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition"></textarea>
+                        </div>
+
+                        <!-- Question 6: Net Promoter Score -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+                                6. How likely are you to recommend ZeePass to a friend or colleague?
+                            </label>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Not likely</span>
+                                <div class="flex space-x-2">
+                                    <label class="cursor-pointer" title="0 - Not likely at all">
+                                        <input type="radio" name="nps" value="0" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">0</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="1">
+                                        <input type="radio" name="nps" value="1" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">1</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="2">
+                                        <input type="radio" name="nps" value="2" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">2</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="3">
+                                        <input type="radio" name="nps" value="3" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">3</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="4">
+                                        <input type="radio" name="nps" value="4" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">4</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="5 - Neutral">
+                                        <input type="radio" name="nps" value="5" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">5</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="6">
+                                        <input type="radio" name="nps" value="6" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">6</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="7">
+                                        <input type="radio" name="nps" value="7" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">7</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="8">
+                                        <input type="radio" name="nps" value="8" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">8</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="9">
+                                        <input type="radio" name="nps" value="9" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">9</div>
+                                    </label>
+                                    <label class="cursor-pointer" title="10 - Extremely likely">
+                                        <input type="radio" name="nps" value="10" class="sr-only">
+                                        <div class="w-8 h-8 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-sm font-medium hover:border-blue-500 transition">10</div>
+                                    </label>
+                                </div>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Extremely likely</span>
+                            </div>
+                        </div>
+
+                        <!-- Optional Contact Info -->
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                            <h5 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Stay in Touch (Optional)</h5>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <input type="email" name="email" placeholder="Email (optional)" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition">
+                                <input type="text" name="name" placeholder="Name (optional)" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition">
+                            </div>
+                            <div class="mt-4">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="updates" value="yes" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">I'd like to receive updates about new features and improvements</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold transition theme-transition">
+                                Submit Feedback
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <p class="text-blue-100 mb-2">© 2025 Moonkite Labs Sdn. Bhd. - Professional IT & Security Solutions</p>
+                <p class="text-blue-200 text-sm">Founded by <a href="https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/" class="hover:text-white underline" target="_blank">Nazri Abdullah</a>, Software Architect/Engineer & Cybersecurity Expert</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dark mode functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            
+            if (isDark) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        // Initialize on page load
+        initTheme();
+
+        // Add event listener for theme toggle
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                if (e.matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+        });
+
+        // Scroll to survey function
+        function scrollToSurvey() {
+            document.getElementById('surveyForm').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // NPS rating interaction
+        document.addEventListener('DOMContentLoaded', function() {
+            const npsLabels = document.querySelectorAll('input[name="nps"]');
+            npsLabels.forEach(function(input) {
+                input.addEventListener('change', function() {
+                    // Remove previous selections
+                    const allLabels = document.querySelectorAll('input[name="nps"] + div');
+                    allLabels.forEach(function(div) {
+                        div.classList.remove('bg-blue-500', 'text-white', 'border-blue-500');
+                        div.classList.add('border-gray-300', 'dark:border-gray-600');
+                    });
+                    // Highlight selected
+                    const selectedDiv = this.nextElementSibling;
+                    selectedDiv.classList.remove('border-gray-300', 'dark:border-gray-600');
+                    selectedDiv.classList.add('bg-blue-500', 'text-white', 'border-blue-500');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
