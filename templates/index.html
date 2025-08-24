@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}}</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23667eea'%3E%3Cpath fill-rule='evenodd' d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z' clip-rule='evenodd'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23667eea'%3E%3Cpath fill-rule='evenodd' d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z' clip-rule='evenodd'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script>
@@ -24,676 +25,649 @@
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .dark .gradient-bg {
             background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         }
+
         .feature-card {
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+
         .dark .feature-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
+
         @keyframes slideUp {
-            from { transform: translateY(10px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
+
         .theme-transition {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 theme-transition">
-    <!-- Header -->
-    <header class="gradient-bg text-white shadow-lg">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 bg-white rounded flex items-center justify-center">
-                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <h1 class="text-xl font-bold">ZeePass</h1>
+<!-- Header -->
+<header class="gradient-bg text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-white rounded flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                          clip-rule="evenodd"/>
+                </svg>
             </div>
-            <nav class="hidden md:flex space-x-6">
-                <a href="#hero" class="hover:text-blue-200 transition">Home</a>
-                <a href="#about" class="hover:text-blue-200 transition">About</a>
-                <a href="#contact" class="hover:text-blue-200 transition">Contact</a>
-                <a href="https://github.com/anazri/zeepass" class="hover:text-blue-200 transition" target="_blank" rel="noopener">GitHub</a>
-            </nav>
-            <div class="flex items-center space-x-2">
-                <button id="themeToggle" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition" title="Toggle dark mode">
-                    <svg id="sunIcon" class="w-4 h-4 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
-                    </svg>
-                    <svg id="moonIcon" class="w-4 h-4 dark:hidden" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
-                    </svg>
-                </button>
-            </div>
+            <h1 class="text-xl font-bold">ZeePass</h1>
         </div>
-    </header>
+        <nav class="hidden md:flex space-x-6">
+            <a href="#hero" class="hover:text-blue-200 transition">Home</a>
+            <a href="#about" class="hover:text-blue-200 transition">About</a>
+            <a href="#contact" class="hover:text-blue-200 transition">Contact</a>
+            <a href="https://github.com/anazri/zeepass" class="hover:text-blue-200 transition" target="_blank"
+               rel="noopener">GitHub</a>
+        </nav>
+        <div class="flex items-center space-x-2">
+            <button id="themeToggle"
+                    class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition theme-transition"
+                    title="Toggle dark mode">
+                <svg id="sunIcon" class="w-4 h-4 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                          d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                          clip-rule="evenodd"/>
+                </svg>
+                <svg id="moonIcon" class="w-4 h-4 dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</header>
 
-    <!-- Hero Section -->
-    <section id="hero" class="gradient-bg text-white py-16">
-        <div class="container mx-auto px-4">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h2 class="text-4xl md:text-5xl font-bold mb-6">Welcome to ZeePass</h2>
-                    <p class="text-xl mb-8 text-blue-100">
-                        Encrypt your data easily<br>
-                        ZeePass provides end-to-end encryption and secure tools to protect your sensitive data. Simple, fast, and secure - everything you need in one place.
-                    </p>
-                    
-                    <!-- Feature Icons -->
-                    <div class="grid grid-cols-3 md:grid-cols-6 gap-4 mb-8">
-                        <a href="/text-encryption" class="text-center">
-                            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a2 2 0 002 2h2a2 2 0 002-2V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <span class="text-xs">Text Encryption</span>
-                        </a>
-                        <a href="/file-encryption" class="text-center">
-                            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <span class="text-xs">File Encryption</span>
-                        </a>
-                        <a href="/chat-encryption" class="text-center">
-                            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
-                                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
-                                </svg>
-                            </div>
-                            <span class="text-xs">Chat</span>
-                        </a>
-                        <a href="/password-generator" class="text-center">
-                            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <span class="text-xs">Password</span>
-                        </a>
-                        <a href="/ssh-key" class="text-center">
-                            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <span class="text-xs">SSH Key</span>
-                        </a>
-                        <a href="/base64" class="text-center">
-                            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <span class="text-xs">Base64</span>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Laptop Mockup -->
-                <div class="flex justify-center">
-                    <div class="relative">
-                        <div class="w-80 h-56 bg-gray-800 rounded-lg shadow-2xl">
-                            <!-- Screen -->
-                            <div class="w-full h-48 bg-white rounded-t-lg p-4">
-                                <!-- Mock interface -->
-                                <div class="flex space-x-2 mb-3">
-                                    <div class="w-3 h-3 bg-red-400 rounded-full"></div>
-                                    <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                                    <div class="w-3 h-3 bg-green-400 rounded-full"></div>
-                                </div>
-                                <div class="space-y-2">
-                                    <div class="h-4 bg-blue-100 rounded w-3/4"></div>
-                                    <div class="h-20 bg-gray-100 rounded"></div>
-                                    <div class="flex space-x-2">
-                                        <div class="h-8 bg-blue-500 rounded px-4 flex-1"></div>
-                                        <div class="h-8 bg-red-300 rounded px-4 w-16"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Base -->
-                            <div class="w-full h-8 bg-gray-700 rounded-b-lg"></div>
+<!-- Hero Section -->
+<section id="hero" class="gradient-bg text-white py-16">
+    <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">Welcome to ZeePass</h2>
+                <p class="text-xl mb-8 text-blue-100">
+                    Encrypt your data easily<br>
+                    ZeePass provides end-to-end encryption and secure tools to protect your sensitive data. Simple,
+                    fast, and secure - everything you need in one place.
+                </p>
+
+                <!-- Feature Icons -->
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-4 mb-8">
+                    <a href="/text-encryption" class="text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd"
+                                      d="M4 5a2 2 0 012-2v1a2 2 0 002 2h2a2 2 0 002-2V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z"
+                                      clip-rule="evenodd"/>
+                            </svg>
                         </div>
+                        <span class="text-xs">Text Encryption</span>
+                    </a>
+                    <a href="/file-encryption" class="text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                      d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs">File Encryption</span>
+                    </a>
+                    <a href="/chat-encryption" class="text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+                                <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs">Chat</span>
+                    </a>
+                    <a href="/password-generator" class="text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                      d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs">Password</span>
+                    </a>
+                    <a href="/ssh-key" class="text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                      d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs">SSH Key</span>
+                    </a>
+                    <a href="/base64" class="text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                      d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs">Base64</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Laptop Mockup -->
+            <div class="flex justify-center">
+                <div class="relative">
+                    <div class="w-80 h-56 bg-gray-800 rounded-lg shadow-2xl">
+                        <!-- Screen -->
+                        <div class="w-full h-48 bg-white rounded-t-lg p-4">
+                            <!-- Mock interface -->
+                            <div class="flex space-x-2 mb-3">
+                                <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                                <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                                <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="h-4 bg-blue-100 rounded w-3/4"></div>
+                                <div class="h-20 bg-gray-100 rounded"></div>
+                                <div class="flex space-x-2">
+                                    <div class="h-8 bg-blue-500 rounded px-4 flex-1"></div>
+                                    <div class="h-8 bg-red-300 rounded px-4 w-16"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Base -->
+                        <div class="w-full h-8 bg-gray-700 rounded-b-lg"></div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Who Benefits Section -->
-    <section class="py-16 bg-gray-50 dark:bg-gray-900 theme-transition">
-        <div class="container mx-auto px-4">
+<!-- Who Benefits Section -->
+<section class="py-16 bg-gray-50 dark:bg-gray-900 theme-transition">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">Who Benefits from ZeePass?</h3>
+            <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Our secure tools are designed for professionals and individuals who prioritize data protection and
+                privacy.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <!-- Sensitive Information -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
+                <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">🔐 Anyone sharing sensitive
+                    information</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">Protect passwords, API keys, personal documents, and
+                    confidential data from prying eyes.</p>
+            </div>
+
+            <!-- Teams -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                        <path d="M6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                    </svg>
+                </div>
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">💬 Teams needing secure
+                    communication</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">End-to-end encrypted chat for discussing sensitive
+                    projects without fear of interception.</p>
+            </div>
+
+            <!-- System Administrators -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">🔑 System administrators</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">Generate secure SSH keys and share encrypted
+                    configuration files safely.</p>
+            </div>
+
+            <!-- Remote Workers -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">📱 Remote workers</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">Secure file sharing and communication when working
+                    from untrusted networks.</p>
+            </div>
+
+            <!-- Security Researchers -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">🛡️ Security researchers</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">Share vulnerability reports and sensitive security
+                    information securely.</p>
+            </div>
+
+            <!-- International Users -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
+                <div class="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-teal-600 dark:text-teal-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">🌐 International users</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">Protect communications in regions with internet
+                    surveillance or censorship.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why SecretPass Section -->
+<section class="py-16 bg-white dark:bg-gray-800 theme-transition">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">Why ZeePass?</h3>
+            <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Choose ZeePass for the ultimate security experience with our comprehensive suite of encryption tools.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- End-to-end Encryption -->
+            <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">End-to-end Encryption</h4>
+                <p class="text-gray-600 dark:text-gray-300">Your data is encrypted on your device and never stored in
+                    plain text. Only you have the keys to decrypt your information.</p>
+            </div>
+
+            <!-- Auto Termination -->
+            <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
+                <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Auto Termination</h4>
+                <p class="text-gray-600 dark:text-gray-300">Set expiration times for your encrypted messages and files.
+                    Data automatically self-destructs after the specified period.</p>
+            </div>
+
+            <!-- Self-Destruction after Reading -->
+            <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
+                <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                        <path fill-rule="evenodd"
+                              d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Self-Destruction</h4>
+                <p class="text-gray-600 dark:text-gray-300">Secret messages are automatically deleted after being read
+                    once, ensuring maximum privacy and security for sensitive communications.</p>
+            </div>
+
+            <!-- Easy Sharing -->
+            <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
+                <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                    </svg>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Easy Sharing</h4>
+                <p class="text-gray-600 dark:text-gray-300">Generate secure links to share encrypted content. Recipients
+                    don't need accounts to access your securely shared information.</p>
+            </div>
+
+            <!-- Data Secure -->
+            <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
+                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Data Secure</h4>
+                <p class="text-gray-600 dark:text-gray-300">Military-grade encryption ensures your data remains
+                    protected. We use industry-standard algorithms trusted by security professionals worldwide.</p>
+            </div>
+
+            <!-- Zero Knowledge -->
+            <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
+                <div class="w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-teal-600 dark:text-teal-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Zero Knowledge</h4>
+                <p class="text-gray-600 dark:text-gray-300">Zero-knowledge architecture means we never have access to
+                    your unencrypted data. Your privacy is guaranteed by design.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Get to know more about us Section -->
+<section id="about" class="py-20 bg-gray-800 text-white relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0"
+             style="background-image: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 100 100&quot;><defs><pattern id=&quot;smallGrid&quot; width=&quot;10&quot; height=&quot;10&quot; patternUnits=&quot;userSpaceOnUse&quot;><path d=&quot;M 10 0 L 0 0 0 10&quot; fill=&quot;none&quot; stroke=&quot;%23ffffff&quot; stroke-width=&quot;0.5&quot;/></pattern></defs><rect width=&quot;100&quot; height=&quot;100&quot; fill=&quot;url(%23smallGrid)&quot;/></svg>');"></div>
+    </div>
+
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="max-w-7xl mx-auto">
             <div class="text-center mb-12">
-                <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">Who Benefits from ZeePass?</h3>
-                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                    Our secure tools are designed for professionals and individuals who prioritize data protection and privacy.
-                </p>
+                <h3 class="text-4xl font-bold mb-6 text-white">Get to know more about us</h3>
+                <div class="w-24 h-1 bg-blue-500 mx-auto mb-8"></div>
             </div>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <!-- Sensitive Information -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
-                    <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">🔐 Anyone sharing sensitive information</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm">Protect passwords, API keys, personal documents, and confidential data from prying eyes.</p>
-                </div>
-
-                <!-- Teams -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
-                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
-                            <path d="M6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">💬 Teams needing secure communication</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm">End-to-end encrypted chat for discussing sensitive projects without fear of interception.</p>
-                </div>
-
-                <!-- System Administrators -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
-                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">🔑 System administrators</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm">Generate secure SSH keys and share encrypted configuration files safely.</p>
-                </div>
-
-                <!-- Remote Workers -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
-                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">📱 Remote workers</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm">Secure file sharing and communication when working from untrusted networks.</p>
-                </div>
-
-                <!-- Security Researchers -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
-                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">🛡️ Security researchers</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm">Share vulnerability reports and sensitive security information securely.</p>
-                </div>
-
-                <!-- International Users -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg dark:hover:shadow-gray-700/50 transition duration-300 theme-transition border dark:border-gray-700">
-                    <div class="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-teal-600 dark:text-teal-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">🌐 International users</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm">Protect communications in regions with internet surveillance or censorship.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Why SecretPass Section -->
-    <section class="py-16 bg-white dark:bg-gray-800 theme-transition">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-12">
-                <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">Why ZeePass?</h3>
-                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                    Choose ZeePass for the ultimate security experience with our comprehensive suite of encryption tools.
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- End-to-end Encryption -->
-                <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
-                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">End-to-end Encryption</h4>
-                    <p class="text-gray-600 dark:text-gray-300">Your data is encrypted on your device and never stored in plain text. Only you have the keys to decrypt your information.</p>
-                </div>
-
-                <!-- Auto Termination -->
-                <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
-                    <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Auto Termination</h4>
-                    <p class="text-gray-600 dark:text-gray-300">Set expiration times for your encrypted messages and files. Data automatically self-destructs after the specified period.</p>
-                </div>
-
-                <!-- Self-Destruction after Reading -->
-                <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
-                    <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Self-Destruction</h4>
-                    <p class="text-gray-600 dark:text-gray-300">Secret messages are automatically deleted after being read once, ensuring maximum privacy and security for sensitive communications.</p>
-                </div>
-
-                <!-- Easy Sharing -->
-                <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
-                    <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Easy Sharing</h4>
-                    <p class="text-gray-600 dark:text-gray-300">Generate secure links to share encrypted content. Recipients don't need accounts to access your securely shared information.</p>
-                </div>
-
-                <!-- Data Secure -->
-                <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
-                    <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Data Secure</h4>
-                    <p class="text-gray-600 dark:text-gray-300">Military-grade encryption ensures your data remains protected. We use industry-standard algorithms trusted by security professionals worldwide.</p>
-                </div>
-
-                <!-- Zero Knowledge -->
-                <div class="feature-card bg-white dark:bg-gray-700 rounded-xl p-6 text-center hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition border dark:border-gray-600">
-                    <div class="w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-teal-600 dark:text-teal-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-100">Zero Knowledge</h4>
-                    <p class="text-gray-600 dark:text-gray-300">Zero-knowledge architecture means we never have access to your unencrypted data. Your privacy is guaranteed by design.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Get to know more about us Section -->
-    <section id="about" class="py-20 bg-gray-800 text-white relative overflow-hidden">
-        <!-- Background Pattern -->
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 100 100&quot;><defs><pattern id=&quot;smallGrid&quot; width=&quot;10&quot; height=&quot;10&quot; patternUnits=&quot;userSpaceOnUse&quot;><path d=&quot;M 10 0 L 0 0 0 10&quot; fill=&quot;none&quot; stroke=&quot;%23ffffff&quot; stroke-width=&quot;0.5&quot;/></pattern></defs><rect width=&quot;100&quot; height=&quot;100&quot; fill=&quot;url(%23smallGrid)&quot;/></svg>');"></div>
-        </div>
-        
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-12">
-                    <h3 class="text-4xl font-bold mb-6 text-white">Get to know more about us</h3>
-                    <div class="w-24 h-1 bg-blue-500 mx-auto mb-8"></div>
-                </div>
-                
-                <div class="grid md:grid-cols-3 gap-8 items-stretch">
-                    <div class="flex">
-                        <div class="bg-gray-700/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 w-full h-full">
+            <div class="grid md:grid-cols-3 gap-8 items-stretch">
+                <div class="flex">
+                    <div class="bg-gray-700/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 w-full h-full">
                         <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-6">
-                                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <h4 class="text-2xl font-bold mb-4 text-white">Our Mission</h4>
-                            <p class="text-lg leading-relaxed text-gray-200">
-                                ZeePass stands at the forefront of data encryption and security. Our mission is to make advanced cryptographic protection accessible to everyone, from individual users to enterprise organizations. We believe that privacy is a fundamental right, and our tools are designed to give you complete control over your sensitive information.
-                            </p>
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                      d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                      clip-rule="evenodd"/>
+                            </svg>
                         </div>
+                        <h4 class="text-2xl font-bold mb-4 text-white">Our Mission</h4>
+                        <p class="text-lg leading-relaxed text-gray-200">
+                            ZeePass stands at the forefront of data encryption and security. Our mission is to make
+                            advanced cryptographic protection accessible to everyone, from individual users to
+                            enterprise organizations. We believe that privacy is a fundamental right, and our tools are
+                            designed to give you complete control over your sensitive information.
+                        </p>
                     </div>
-                    
-                    <div class="flex">
-                        <div class="bg-gray-700/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 w-full h-full">
+                </div>
+
+                <div class="flex">
+                    <div class="bg-gray-700/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 w-full h-full">
                         <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-6">
-                                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
-                                    <path d="M6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-                                </svg>
-                            </div>
-                            <h4 class="text-2xl font-bold mb-4 text-white">Our Expertise</h4>
-                            <p class="text-lg leading-relaxed text-gray-200">
-                                Built by security experts and cryptography specialists, ZeePass combines cutting-edge technology with intuitive design. Whether you're protecting personal documents, securing business communications, or generating strong authentication credentials, our platform provides the tools you need to stay safe in the digital world.
-                            </p>
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                                <path d="M6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                            </svg>
                         </div>
+                        <h4 class="text-2xl font-bold mb-4 text-white">Our Expertise</h4>
+                        <p class="text-lg leading-relaxed text-gray-200">
+                            Built by security experts and cryptography specialists, ZeePass combines cutting-edge
+                            technology with intuitive design. Whether you're protecting personal documents, securing
+                            business communications, or generating strong authentication credentials, our platform
+                            provides the tools you need to stay safe in the digital world.
+                        </p>
                     </div>
-                    
-                    <div class="flex">
-                        <div class="bg-gray-700/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 w-full h-full">
+                </div>
+
+                <div class="flex">
+                    <div class="bg-gray-700/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 w-full h-full">
                         <div class="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6">
-                                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <h4 class="text-2xl font-bold mb-4 text-white">Our Commitment</h4>
-                            <p class="text-lg leading-relaxed text-gray-200">
-                                At ZeePass, we are committed to continuous innovation and transparency. Security threats evolve every day, and so do we—constantly refining our solutions to meet the highest standards. We prioritize trust by keeping our processes open, our technology up-to-date, and our users at the heart of every decision we make.
-                            </p>
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                                      clip-rule="evenodd"/>
+                            </svg>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-12">
-                    <div class="inline-flex items-center space-x-2 bg-blue-600/20 backdrop-blur-sm border border-blue-500/30 rounded-full px-6 py-3">
-                        <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                        </svg>
-                        <span class="text-blue-400 font-semibold">Trust ZeePass to keep your secrets secure</span>
+                        <h4 class="text-2xl font-bold mb-4 text-white">Our Commitment</h4>
+                        <p class="text-lg leading-relaxed text-gray-200">
+                            At ZeePass, we are committed to continuous innovation and transparency. Security threats
+                            evolve every day, and so do we—constantly refining our solutions to meet the highest
+                            standards. We prioritize trust by keeping our processes open, our technology up-to-date, and
+                            our users at the heart of every decision we make.
+                        </p>
                     </div>
                 </div>
             </div>
+
+            <div class="text-center mt-12">
+                <div class="inline-flex items-center space-x-2 bg-blue-600/20 backdrop-blur-sm border border-blue-500/30 rounded-full px-6 py-3">
+                    <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-blue-400 font-semibold">Trust ZeePass to keep your secrets secure</span>
+                </div>
+            </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Deployment Options Section -->
-    <section id="contact" class="py-16 bg-gray-50 dark:bg-gray-900 theme-transition">
-        <div class="container mx-auto px-4">
-            <div class="max-w-6xl mx-auto">
-                <div class="text-center mb-12">
-                    <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">Setup ZeePass in your environment?</h3>
-                    <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                        Choose the deployment option that best fits your security requirements and infrastructure needs.
-                    </p>
-                </div>
-                
-                <!-- Deployment Options -->
-                <div class="grid md:grid-cols-2 gap-8 mb-16">
-                    <!-- Cloud Hosting Option -->
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition">
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.413V13H5.5z"/>
-                                <path d="M9 13h2v5a1 1 0 11-2 0v-5z"/>
-                            </svg>
-                        </div>
-                        <h4 class="text-2xl font-semibold text-center mb-4 text-gray-800 dark:text-gray-100">☁️ Cloud Hosted</h4>
-                        <div class="text-center mb-6">
-                            <div class="inline-block bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 mb-4">
-                                <code class="text-blue-700 font-mono">yourcompany.zeepass.com</code>
-                            </div>
-                        </div>
-                        <ul class="space-y-3 mb-6">
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Custom subdomain with SSL</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Managed infrastructure & updates</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">24/7 monitoring & support</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Automatic backups & scaling</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Fast deployment (24-48 hours)</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Fully customizable to fit your goals</span>
-                            </li>
-                        </ul>
-                        <div class="text-center">
-                            <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">Recommended for most organizations</span>
-                        </div>
-                    </div>
+<!-- Contact Section -->
+<section id="contact" class="py-16 bg-gray-50 dark:bg-gray-900 theme-transition">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">Get in Touch</h3>
+                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Have questions, need support, or want to discuss enterprise deployment? We're here to help.
+                </p>
+            </div>
 
-                    <!-- On-Premise Option -->
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-gray-900/50 transition duration-300 theme-transition">
-                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg class="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <h4 class="text-2xl font-semibold text-center mb-4 text-gray-800 dark:text-gray-100">🏢 On-Premise</h4>
-                        <div class="text-center mb-6">
-                            <div class="inline-block bg-purple-50 border border-purple-200 rounded-lg px-4 py-2 mb-4">
-                                <code class="text-purple-700 font-mono">your-domain.com</code>
-                            </div>
-                        </div>
-                        <ul class="space-y-3 mb-6">
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Complete data sovereignty</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Custom security policies</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Air-gapped deployment option</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Docker & Kubernetes support</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Installation & training included</span>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-700 dark:text-gray-300">Fully customizable to fit your goals</span>
-                            </li>
-                        </ul>
-                        <div class="text-center">
-                            <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">Perfect for regulated industries</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Contact Form -->
-                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 theme-transition">
-                    <div class="text-center mb-8">
-                        <h4 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Ready to get started?</h4>
-                        <p class="text-gray-600 dark:text-gray-300">Contact us to discuss your deployment requirements and get a custom quote.</p>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-12 items-center">
+            <!-- Contact Form -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 theme-transition">
+                <form action="/contact" method="POST" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
                         <div>
-                            <form action="/contact" method="POST" class="space-y-4">
-                                <div class="grid md:grid-cols-2 gap-4">
-                                    <div>
-                                        <input type="text" name="name" placeholder="Name" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition">
-                                    </div>
-                                    <div>
-                                        <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition">
-                                    </div>
-                                </div>
-                                <div>
-                                    <input type="text" name="company" placeholder="Company Name (optional)" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition">
-                                </div>
-                                <div>
-                                    <select name="inquiry_type" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
-                                        <option value="">What can we help you with?</option>
-                                        <option value="cloud">Cloud Hosting Setup</option>
-                                        <option value="onpremise">On-Premise Installation</option>
-                                        <option value="support">Technical Support</option>
-                                        <option value="consultation">Consultation & Planning</option>
-                                        <option value="custom">Custom Development</option>
-                                        <option value="question">General Question</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <textarea name="message" rows="4" placeholder="Tell us about your needs, ask questions, or share your requirements..." required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition"></textarea>
-                                </div>
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 rounded-lg font-semibold transition theme-transition">
-                                    Send Message
-                                </button>
-                            </form>
-                            
-                            <div class="mt-6 pt-6 border-t border-gray-200">
-                                <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                                    <div class="flex items-center space-x-2">
-                                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-                                        </svg>
-                                        <span>contact@moonkite.io</span>
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-                                        </svg>
-                                        <span>+60-12 323 4007</span>
-                                    </div>
-                                </div>
-                                <div class="mt-4 p-3 bg-blue-50 rounded-lg">
-                                    <p class="text-xs text-blue-700 font-medium">💡 Free consultation included with all deployments</p>
-                                </div>
-                            </div>
+                            <label for="name" class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Name
+                                *</label>
+                            <input type="text" name="name" id="name" required
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition"
+                                   placeholder="Your full name">
                         </div>
-                        
-                        <!-- Benefits -->
-                        <div class="space-y-6">
-                            <div class="flex items-start space-x-4">
-                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h5 class="font-semibold text-gray-800">Enterprise Support</h5>
-                                    <p class="text-sm text-gray-600">Dedicated support team with SLA guarantees and 24/7 monitoring for critical deployments.</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start space-x-4">
-                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h5 class="font-semibold text-gray-800">Compliance Ready</h5>
-                                    <p class="text-sm text-gray-600">Built for HIPAA, SOC 2, GDPR, and other regulatory requirements with detailed audit trails.</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start space-x-4">
-                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h5 class="font-semibold text-gray-800">Rapid Deployment</h5>
-                                    <p class="text-sm text-gray-600">Get up and running quickly with automated deployment scripts and comprehensive documentation.</p>
-                                </div>
-                            </div>
+                        <div>
+                            <label for="email"
+                                   class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Email
+                                *</label>
+                            <input type="email" name="email" id="email" required
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition"
+                                   placeholder="your@email.com">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="company" class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Company
+                            (optional)</label>
+                        <input type="text" name="company" id="company"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition"
+                               placeholder="Your company name">
+                    </div>
+
+                    <div>
+                        <label for="inquiry_type"
+                               class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Inquiry
+                            Type</label>
+                        <select name="inquiry_type" id="inquiry_type"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
+                            <option value="">Select inquiry type</option>
+                            <option value="question">General Question</option>
+                            <option value="support">Technical Support</option>
+                            <option value="enterprise">Enterprise Deployment</option>
+                            <option value="partnership">Partnership</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Message
+                            *</label>
+                        <textarea name="message" id="message" rows="5" required
+                                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition"
+                                  placeholder="Tell us how we can help you..."></textarea>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold transition theme-transition">
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+                    <div class="grid md:grid-cols-2 gap-6 text-center">
+                        <div class="flex items-center justify-center space-x-3">
+                            <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                            </svg>
+                            <span class="text-gray-700 dark:text-gray-300">contact@moonkite.io</span>
+                        </div>
+                        <div class="flex items-center justify-center space-x-3">
+                            <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.25l-1.97 9.3c-.145.66-.538.818-1.084.51l-3-2.21-1.446 1.394c-.162.162-.295.295-.603.295l.213-3.06 5.568-5.033c.242-.213-.054-.334-.373-.12l-6.87 4.326-2.962-.924c-.645-.213-.66-.645.135-.954l11.574-4.458c.534-.197 1 .132.818.934z"/>
+                            </svg>
+                            <a href="https://t.me/anazri" target="_blank" rel="noopener"
+                               class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition">@anazri</a>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">We typically respond within 24
+                            hours</p>
+                        <div class="inline-flex items-center space-x-4">
+                            <a href="/survey"
+                               class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition">
+                                📝 Take our feedback survey
+                            </a>
+                            <span class="text-gray-300 dark:text-gray-600">•</span>
+                            <a href="https://github.com/anazri/zeepass" target="_blank" rel="noopener"
+                               class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition">
+                                ⭐ Star us on GitHub
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer class="gradient-bg text-white py-8">
-        <div class="container mx-auto px-4">
-            <div class="text-center">
-                <p class="text-blue-100 mb-2">© 2025 Moonkite Labs Sdn. Bhd. - Professional IT & Security Solutions</p>
-                <p class="text-blue-200 text-sm">Founded by <a href="https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/" class="hover:text-white underline" target="_blank">Nazri Abdullah</a>, Software Architect/Engineer & Cybersecurity Expert</p>
+<!-- Footer -->
+<footer class="gradient-bg text-white py-8">
+    <div class="container mx-auto px-4">
+        <div class="text-center">
+            <p class="text-blue-100 mb-2">© 2025 Moonkite Labs Sdn. Bhd. - Professional IT & Security Solutions</p>
+            <p class="text-blue-200 text-sm mb-4">Founded by <a
+                    href="https://www.linkedin.com/in/nazri-bin-abdullah-a75b40268/" class="hover:text-white underline"
+                    target="_blank">Nazri Abdullah</a>, Software Architect/Engineer & Cybersecurity Expert</p>
+            <div class="flex justify-center items-center space-x-6 text-sm">
+                <a href="/survey" class="text-blue-200 hover:text-white transition">📝 Feedback Survey</a>
+                <span class="text-blue-300">•</span>
+                <a href="#contact" class="text-blue-200 hover:text-white transition">📧 Contact Us</a>
+                <span class="text-blue-300">•</span>
+                <a href="https://github.com/anazri/zeepass" class="text-blue-200 hover:text-white transition"
+                   target="_blank" rel="noopener">⭐ GitHub</a>
             </div>
         </div>
-    </footer>
+    </div>
+</footer>
 
-    <script>
-        // Dark mode functionality
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.classList.contains('dark');
-            
-            if (isDark) {
-                html.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                html.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
+<script>
+    // Dark mode functionality
+    function toggleTheme() {
+        const html = document.documentElement;
+        const isDark = html.classList.contains('dark');
+
+        if (isDark) {
+            html.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
         }
+    }
 
-        // Initialize theme from localStorage or system preference
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+    // Initialize theme from localStorage or system preference
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+            document.documentElement.classList.add('dark');
+        }
+    }
+
+    // Initialize on page load
+    initTheme();
+
+    // Add event listener for theme toggle
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            if (e.matches) {
                 document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
             }
         }
+    });
 
-        // Initialize on page load
-        initTheme();
-
-        // Add event listener for theme toggle
-        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('theme')) {
-                if (e.matches) {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
-            }
-        });
-    </script>
+</script>
 </body>
 </html>

@@ -28,6 +28,8 @@ func main() {
 	http.HandleFunc("/view/", handlers.ViewEncryptedHandler)
 	http.HandleFunc("/view-file/", handlers.ViewEncryptedFileHandler)
 	http.HandleFunc("/contact", handlers.HandleContact)
+	http.HandleFunc("/survey", handlers.SurveyHandler)
+	http.HandleFunc("/feedback", handlers.HandleFeedback)
 	http.HandleFunc("/static/", handlers.StaticHandler)
 
 	log.Println("ZeePass server starting on :8080")
