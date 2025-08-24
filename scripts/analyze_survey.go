@@ -11,18 +11,20 @@ import (
 )
 
 type SurveyResponse struct {
-	ID             string    `json:"id"`
-	Timestamp      time.Time `json:"timestamp"`
-	Likelihood     string    `json:"likelihood"`
-	Tools          []string  `json:"tools"`
-	UseCase        string    `json:"use_case"`
-	Concerns       string    `json:"concerns"`
-	FeatureRequest string    `json:"feature_request"`
-	NPS            int       `json:"nps"`
-	Email          string    `json:"email,omitempty"`
-	Name           string    `json:"name,omitempty"`
-	Updates        bool      `json:"updates"`
-	IPAddress      string    `json:"ip_address"`
+	ID                 string    `json:"id"`
+	Timestamp          time.Time `json:"timestamp"`
+	Likelihood         string    `json:"likelihood"`
+	Tools              []string  `json:"tools"`
+	UseCase            string    `json:"use_case"`
+	BusinessSector     string    `json:"business_sector"`
+	EnterpriseInterest string    `json:"enterprise_interest"`
+	Concerns           string    `json:"concerns"`
+	FeatureRequest     string    `json:"feature_request"`
+	NPS                int       `json:"nps"`
+	Email              string    `json:"email,omitempty"`
+	Name               string    `json:"name,omitempty"`
+	Updates            bool      `json:"updates"`
+	IPAddress          string    `json:"ip_address"`
 }
 
 func main() {
@@ -54,6 +56,8 @@ func main() {
 	analyzeLikelihood(responses)
 	analyzeTools(responses)
 	analyzeUseCases(responses)
+	analyzeBusinessSectors(responses)
+	analyzeEnterpriseInterest(responses)
 	analyzeConcerns(responses)
 	analyzeNPS(responses)
 	analyzeFeatureRequests(responses)
@@ -338,6 +342,113 @@ func analyzeTimeline(responses []SurveyResponse) {
 	if len(responses) > 1 {
 		duration := last.Sub(first)
 		fmt.Printf("  Time Span: %s\n", duration.String())
+	}
+	fmt.Println()
+}
+
+func analyzeBusinessSectors(responses []SurveyResponse) {
+	fmt.Printf("🏢 Business Sectors:\n")
+	sectors := make(map[string]int)
+	
+	for _, r := range responses {
+		if r.BusinessSector != "" {
+			sectors[r.BusinessSector]++
+		}
+	}
+
+	labels := map[string]string{
+		"technology":        "Technology/Software",
+		"finance":          "Finance/Banking",
+		"healthcare":       "Healthcare/Medical", 
+		"government":       "Government/Public Sector",
+		"education":        "Education/Research",
+		"legal":            "Legal/Law Firm",
+		"consulting":       "Consulting",
+		"manufacturing":    "Manufacturing",
+		"retail":           "Retail/E-commerce",
+		"media":            "Media/Communications",
+		"nonprofit":        "Non-profit/NGO",
+		"freelance":        "Freelance/Independent",
+		"student":          "Student",
+		"other":            "Other",
+		"prefer_not_to_say": "Prefer not to say",
+	}
+
+	type sectorCount struct {
+		name  string
+		count int
+	}
+	
+	var sortedSectors []sectorCount
+	for sector, count := range sectors {
+		sortedSectors = append(sortedSectors, sectorCount{sector, count})
+	}
+
+	sort.Slice(sortedSectors, func(i, j int) bool {
+		return sortedSectors[i].count > sortedSectors[j].count
+	})
+
+	for _, sc := range sortedSectors {
+		percentage := float64(sc.count) / float64(len(responses)) * 100
+		label := labels[sc.name]
+		if label == "" {
+			label = sc.name
+		}
+		fmt.Printf("  %s: %d (%.1f%%)\n", label, sc.count, percentage)
+	}
+	fmt.Println()
+}
+
+func analyzeEnterpriseInterest(responses []SurveyResponse) {
+	fmt.Printf("🏢 Enterprise Deployment Interest:\n")
+	interest := make(map[string]int)
+	
+	for _, r := range responses {
+		if r.EnterpriseInterest != "" {
+			interest[r.EnterpriseInterest]++
+		}
+	}
+
+	labels := map[string]string{
+		"very_interested":    "Very Interested - wants to discuss immediately",
+		"somewhat_interested": "Somewhat Interested - might consider in future",
+		"need_more_info":     "Needs More Information",
+		"not_interested":     "Not Interested - prefers public version",
+		"individual_user":    "Individual User - not representing organization",
+	}
+
+	type interestCount struct {
+		name  string
+		count int
+	}
+	
+	var sortedInterest []interestCount
+	for int_type, count := range interest {
+		sortedInterest = append(sortedInterest, interestCount{int_type, count})
+	}
+
+	sort.Slice(sortedInterest, func(i, j int) bool {
+		return sortedInterest[i].count > sortedInterest[j].count
+	})
+
+	potentialLeads := 0
+	for _, ic := range sortedInterest {
+		percentage := float64(ic.count) / float64(len(responses)) * 100
+		label := labels[ic.name]
+		if label == "" {
+			label = ic.name
+		}
+		fmt.Printf("  %s: %d (%.1f%%)\n", label, ic.count, percentage)
+		
+		// Count potential leads
+		if ic.name == "very_interested" || ic.name == "somewhat_interested" || ic.name == "need_more_info" {
+			potentialLeads += ic.count
+		}
+	}
+	
+	if potentialLeads > 0 {
+		leadPercentage := float64(potentialLeads) / float64(len(responses)) * 100
+		fmt.Printf("  🎯 Potential Enterprise Leads: %d (%.1f%%)\n", potentialLeads, leadPercentage)
 	}
 	fmt.Println()
 }

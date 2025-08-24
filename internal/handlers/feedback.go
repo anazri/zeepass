@@ -11,18 +11,20 @@ import (
 )
 
 type SurveyResponse struct {
-	ID             string    `json:"id"`
-	Timestamp      time.Time `json:"timestamp"`
-	Likelihood     string    `json:"likelihood"`
-	Tools          []string  `json:"tools"`
-	UseCase        string    `json:"use_case"`
-	Concerns       string    `json:"concerns"`
-	FeatureRequest string    `json:"feature_request"`
-	NPS            int       `json:"nps"`
-	Email          string    `json:"email,omitempty"`
-	Name           string    `json:"name,omitempty"`
-	Updates        bool      `json:"updates"`
-	IPAddress      string    `json:"ip_address"`
+	ID                 string    `json:"id"`
+	Timestamp          time.Time `json:"timestamp"`
+	Likelihood         string    `json:"likelihood"`
+	Tools              []string  `json:"tools"`
+	UseCase            string    `json:"use_case"`
+	BusinessSector     string    `json:"business_sector"`
+	EnterpriseInterest string    `json:"enterprise_interest"`
+	Concerns           string    `json:"concerns"`
+	FeatureRequest     string    `json:"feature_request"`
+	NPS                int       `json:"nps"`
+	Email              string    `json:"email,omitempty"`
+	Name               string    `json:"name,omitempty"`
+	Updates            bool      `json:"updates"`
+	IPAddress          string    `json:"ip_address"`
 }
 
 func HandleFeedback(w http.ResponseWriter, r *http.Request) {
@@ -50,18 +52,20 @@ func HandleFeedback(w http.ResponseWriter, r *http.Request) {
 
 	// Create survey response
 	response := SurveyResponse{
-		ID:             id,
-		Timestamp:      time.Now(),
-		Likelihood:     strings.TrimSpace(r.FormValue("likelihood")),
-		Tools:          r.Form["tools"], // Multiple checkbox values
-		UseCase:        strings.TrimSpace(r.FormValue("use_case")),
-		Concerns:       strings.TrimSpace(r.FormValue("concerns")),
-		FeatureRequest: strings.TrimSpace(r.FormValue("feature_request")),
-		NPS:            npsScore,
-		Email:          strings.TrimSpace(r.FormValue("email")),
-		Name:           strings.TrimSpace(r.FormValue("name")),
-		Updates:        r.FormValue("updates") == "yes",
-		IPAddress:      getClientIP(r),
+		ID:                 id,
+		Timestamp:          time.Now(),
+		Likelihood:         strings.TrimSpace(r.FormValue("likelihood")),
+		Tools:              r.Form["tools"], // Multiple checkbox values
+		UseCase:            strings.TrimSpace(r.FormValue("use_case")),
+		BusinessSector:     strings.TrimSpace(r.FormValue("business_sector")),
+		EnterpriseInterest: strings.TrimSpace(r.FormValue("enterprise_interest")),
+		Concerns:           strings.TrimSpace(r.FormValue("concerns")),
+		FeatureRequest:     strings.TrimSpace(r.FormValue("feature_request")),
+		NPS:                npsScore,
+		Email:              strings.TrimSpace(r.FormValue("email")),
+		Name:               strings.TrimSpace(r.FormValue("name")),
+		Updates:            r.FormValue("updates") == "yes",
+		IPAddress:          getClientIP(r),
 	}
 
 	// Save to file
@@ -170,8 +174,8 @@ func saveSurveyToFile(response SurveyResponse) error {
 	}
 
 	// Also log to console for immediate visibility
-	fmt.Printf("Survey response saved: ID=%s, Likelihood=%s, NPS=%d, Tools=%v (Total responses: %d)\n", 
-		response.ID, response.Likelihood, response.NPS, response.Tools, len(responses))
+	fmt.Printf("Survey response saved: ID=%s, Likelihood=%s, NPS=%d, Tools=%v, BusinessSector=%s, EnterpriseInterest=%s (Total responses: %d)\n", 
+		response.ID, response.Likelihood, response.NPS, response.Tools, response.BusinessSector, response.EnterpriseInterest, len(responses))
 
 	return nil
 }

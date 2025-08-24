@@ -203,10 +203,64 @@
                             </select>
                         </div>
 
-                        <!-- Question 4: Concerns -->
+                        <!-- Question 4: Business Sector -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
-                                4. What concerns you most about online security tools?
+                                4. What business sector do you work in? (Optional)
+                            </label>
+                            <select name="business_sector" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 theme-transition">
+                                <option value="">Select your business sector</option>
+                                <option value="technology">Technology/Software</option>
+                                <option value="finance">Finance/Banking</option>
+                                <option value="healthcare">Healthcare/Medical</option>
+                                <option value="government">Government/Public Sector</option>
+                                <option value="education">Education/Research</option>
+                                <option value="legal">Legal/Law Firm</option>
+                                <option value="consulting">Consulting</option>
+                                <option value="manufacturing">Manufacturing</option>
+                                <option value="retail">Retail/E-commerce</option>
+                                <option value="media">Media/Communications</option>
+                                <option value="nonprofit">Non-profit/NGO</option>
+                                <option value="freelance">Freelance/Independent</option>
+                                <option value="student">Student</option>
+                                <option value="other">Other</option>
+                                <option value="prefer_not_to_say">Prefer not to say</option>
+                            </select>
+                        </div>
+
+                        <!-- Question 5: Enterprise Interest -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+                                5. Would your organization be interested in a private deployment of ZeePass?
+                            </label>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="enterprise_interest" value="very_interested" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Very interested - would like to discuss immediately</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="enterprise_interest" value="somewhat_interested" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Somewhat interested - might consider in the future</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="enterprise_interest" value="need_more_info" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Need more information about pricing and features</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="enterprise_interest" value="not_interested" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">Not interested - prefer using the public version</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="enterprise_interest" value="individual_user" class="text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400">
+                                    <span class="text-gray-700 dark:text-gray-300">I'm an individual user, not representing an organization</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 6: Concerns -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
+                                6. What concerns you most about online security tools?
                             </label>
                             <div class="space-y-2">
                                 <label class="flex items-center space-x-3 cursor-pointer">
@@ -236,18 +290,18 @@
                             </div>
                         </div>
 
-                        <!-- Question 5: Feature Request -->
+                        <!-- Question 7: Feature Request -->
                         <div>
                             <label for="feature_request" class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
-                                5. What feature would you want us to add next?
+                                7. What feature would you want us to add next?
                             </label>
                             <textarea name="feature_request" rows="3" placeholder="Describe any features you'd like to see..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 theme-transition"></textarea>
                         </div>
 
-                        <!-- Question 6: Net Promoter Score -->
+                        <!-- Question 8: Net Promoter Score -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">
-                                6. How likely are you to recommend ZeePass to a friend or colleague?
+                                8. How likely are you to recommend ZeePass to a friend or colleague?
                             </label>
                             <div class="flex justify-between items-center">
                                 <span class="text-xs text-gray-500 dark:text-gray-400">Not likely</span>
