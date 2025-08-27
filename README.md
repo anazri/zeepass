@@ -174,6 +174,36 @@ Use a cryptographically secure 32-byte key in production.
 - **Secure Random Generation**: Cryptographically secure random number generation
 - **TLS-Ready**: Designed for HTTPS deployment
 
+## 🏛️ Security Architecture
+
+### **HTMX vs Framework Comparison**
+
+ZeePass uses **HTMX** over client-side frameworks (React/Next.js) for enhanced security:
+
+**✅ HTMX Security Advantages:**
+- **Server-Side Cryptography**: All encryption/decryption operations execute server-side in Go
+- **Zero Client-Side Crypto**: No JavaScript cryptographic libraries exposed to browser
+- **Minimal Attack Surface**: Reduced client-side code minimizes potential vulnerabilities
+- **Server-Only Secrets**: Encryption keys never transmitted to or accessible by client
+- **XSS Mitigation**: Limited client-side JavaScript reduces XSS-based crypto key extraction risks
+
+**⚠️ Client-Side Framework Risks:**
+- JavaScript crypto libraries exposed in browser environment
+- Potential crypto keys in client bundles
+- Complex dependency chains increase attack surface
+- Client-side state management vulnerabilities
+- SSR/hydration security considerations
+
+**Security Decision:** HTMX's server-centric approach aligns perfectly with ZeePass's zero-knowledge security model, ensuring all cryptographic operations remain server-side while clients only receive encrypted results.
+
+### **Infrastructure Security**
+
+**Recommended Deployment:** Docker Compose over Kubernetes
+- **Simplified Attack Surface**: Fewer moving parts reduce security complexity
+- **Container Isolation**: Docker provides process and filesystem isolation
+- **Secrets Management**: Docker Compose secrets for encryption keys and Redis passwords
+- **Network Security**: Internal container networking isolates services
+
 ## 🌐 Deployment
 
 ### **Development**
