@@ -39,8 +39,7 @@ WORKDIR /app
 # Copy the binary from builder stage
 COPY --from=builder /app/zeepass .
 
-# Copy static assets and templates
-COPY --from=builder /app/static ./static
+# Copy templates
 COPY --from=builder /app/templates ./templates
 
 # Change ownership to non-root user
