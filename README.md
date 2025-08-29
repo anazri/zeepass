@@ -223,6 +223,68 @@ go build -o zeepass cmd/server/main.go
 
 ### **Docker Deployment**
 
+#### **Single Host with Docker Compose**
+```bash
+# Clone and navigate to the deploy directory
+cd deploy
+
+# Start with minimal setup (includes monitoring)
+docker-compose -f docker-compose-minimal.yml up -d
+
+# Or full setup with advanced monitoring
+docker-compose up -d
+```
+
+#### **Multi-Host with Docker Swarm**
+
+**1. Initialize Docker Swarm**
+```bash
+# On manager node
+docker swarm init --advertise-addr <MANAGER-IP>
+
+# On worker nodes (use token from init output)
+docker swarm join --token <TOKEN> <MANAGER-IP>:2377
+```
+
+**2. Deploy ZeePass Stack**
+```bash
+# Navigate to deploy directory
+cd deploy
+
+# Deploy the stack
+docker stack deploy -c docker-swarm-minimal.yml zeepass
+```
+
+**3. Manage the Stack**
+```bash
+# Check stack status
+docker stack ps zeepass
+
+# Scale services
+docker service scale zeepass_zeepass=3
+docker service scale zeepass_nginx=2
+
+# View logs
+docker service logs zeepass_zeepass
+
+# Remove stack
+docker stack rm zeepass
+```
+
+**4. Stack Features**
+- **High Availability**: 2 replicas of ZeePass app and Nginx
+- **Load Balancing**: Automatic load balancing across replicas  
+- **Rolling Updates**: Zero-downtime deployments
+- **Health Checks**: Automatic service recovery
+- **Monitoring**: GoAccess, Uptime Kuma, and Netdata included
+
+**5. Access Services**
+- **ZeePass**: http://your-swarm-ip (load balanced)
+- **GoAccess**: http://your-swarm-ip:7890
+- **Uptime Kuma**: http://your-swarm-ip:3001  
+- **Netdata**: http://your-swarm-ip:19999
+
+#### **Custom Docker Build**
 ```dockerfile
 FROM golang:1.24.2-alpine AS builder
 WORKDIR /app
