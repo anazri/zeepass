@@ -139,7 +139,7 @@
                         </div>
                         <span class="text-xs">File Encryption</span>
                     </a>
-                    <a href="/chat-encryption" class="text-center">
+                    <a href="/chat-encryption" class="text-center md:cursor-pointer cursor-not-allowed md:opacity-100 opacity-50" onclick="return checkMobileAccess(event)">
                         <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition cursor-pointer">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
@@ -661,6 +661,16 @@
 
     // Add event listener for theme toggle
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+    // Mobile access check for Chat Encryption
+    function checkMobileAccess(event) {
+        if (window.innerWidth < 768) { // Mobile breakpoint
+            event.preventDefault();
+            alert('Chat Encryption is not available on mobile devices. Please use a desktop or laptop computer.');
+            return false;
+        }
+        return true;
+    }
 
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
