@@ -683,13 +683,13 @@
             
             clipboard.on('success', function(e) {
                 const button = e.trigger;
-                const originalText = button.textContent;
+                const originalHTML = button.innerHTML;
                 
-                button.textContent = 'Copied!';
+                button.innerHTML = 'Copied!';
                 button.classList.add('copy-success');
                 
                 setTimeout(() => {
-                    button.textContent = originalText;
+                    button.innerHTML = originalHTML;
                     button.classList.remove('copy-success');
                 }, 2000);
                 
