@@ -108,7 +108,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 theme-transition">
+<body class="bg-gray-900 theme-transition" style="background-color: #111827;">
     <!-- Header -->
     <header class="gradient-bg text-white shadow-lg">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -682,9 +682,11 @@
             
             if (isDark) {
                 document.documentElement.classList.remove('dark');
+                document.body.style.backgroundColor = '';
                 localStorage.setItem('theme', 'light');
             } else {
                 document.documentElement.classList.add('dark');
+                document.body.style.backgroundColor = '#111827';
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -695,6 +697,9 @@
             
             if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
                 document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.body.style.backgroundColor = '';
             }
         }
         
