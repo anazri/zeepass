@@ -105,8 +105,8 @@ func EncryptTextHandler(w http.ResponseWriter, r *http.Request) {
 			<div class="mb-4">
 				<label class="block text-sm font-medium text-gray-700 mb-2">Secure Link</label>
 				<div class="flex">
-					<input type="text" value="%s" readonly class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm" id="shareURL">
-					<button onclick="copyToClipboard()" class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition">
+					<input type="text" value="%s" readonly class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm" id="textShareURL">
+					<button class="copy-btn px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition" data-clipboard-target="#textShareURL">
 						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
 							<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
 							<path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
@@ -121,11 +121,29 @@ func EncryptTextHandler(w http.ResponseWriter, r *http.Request) {
 			</div>
 		</div>
 		<script>
-			function copyToClipboard() {
-				const urlInput = document.getElementById('shareURL');
-				urlInput.select();
-				document.execCommand('copy');
-				alert('Link copied to clipboard!');
+			// Reinitialize ClipboardJS for dynamically added buttons
+			if (typeof ClipboardJS !== 'undefined') {
+				const newClipboard = new ClipboardJS('.copy-btn');
+				newClipboard.on('success', function(e) {
+					const button = e.trigger;
+					const originalHTML = button.innerHTML;
+					
+					button.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+					button.classList.add('bg-green-600', 'hover:bg-green-700');
+					button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+					
+					setTimeout(() => {
+						button.innerHTML = originalHTML;
+						button.classList.remove('bg-green-600', 'hover:bg-green-700');
+						button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+					}, 2000);
+					
+					e.clearSelection();
+				});
+				
+				newClipboard.on('error', function(e) {
+					alert('Copy failed. Please copy the link manually.');
+				});
 			}
 		</script>
 	`, viewURL, getLifetimeDisplay(lifetime), getPINDisplay(pin))
@@ -290,8 +308,8 @@ func EncryptFileHandler(w http.ResponseWriter, r *http.Request) {
 			<div class="mb-4">
 				<label class="block text-sm font-medium text-gray-700 mb-2">Secure Link</label>
 				<div class="flex">
-					<input type="text" value="%s" readonly class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm" id="shareURL">
-					<button onclick="copyToClipboard()" class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition">
+					<input type="text" value="%s" readonly class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm" id="fileShareURL">
+					<button class="copy-btn px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition" data-clipboard-target="#fileShareURL">
 						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
 							<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
 							<path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
@@ -306,11 +324,29 @@ func EncryptFileHandler(w http.ResponseWriter, r *http.Request) {
 			</div>
 		</div>
 		<script>
-			function copyToClipboard() {
-				const urlInput = document.getElementById('shareURL');
-				urlInput.select();
-				document.execCommand('copy');
-				alert('Link copied to clipboard!');
+			// Reinitialize ClipboardJS for dynamically added buttons
+			if (typeof ClipboardJS !== 'undefined') {
+				const newClipboard = new ClipboardJS('.copy-btn');
+				newClipboard.on('success', function(e) {
+					const button = e.trigger;
+					const originalHTML = button.innerHTML;
+					
+					button.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+					button.classList.add('bg-green-600', 'hover:bg-green-700');
+					button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+					
+					setTimeout(() => {
+						button.innerHTML = originalHTML;
+						button.classList.remove('bg-green-600', 'hover:bg-green-700');
+						button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+					}, 2000);
+					
+					e.clearSelection();
+				});
+				
+				newClipboard.on('error', function(e) {
+					alert('Copy failed. Please copy the link manually.');
+				});
 			}
 		</script>
 	`, fileHeader.Filename, fileSize, viewURL, getLifetimeDisplay(lifetime), getPINDisplay(pin))
