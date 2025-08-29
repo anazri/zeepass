@@ -23,6 +23,16 @@
                 }
             }
         }
+        
+        // Initialize theme immediately to prevent flash
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
     </script>
     <style>
         .gradient-bg {
@@ -511,8 +521,10 @@
         }
 
 
-        // Initialize theme on load
-        document.addEventListener('DOMContentLoaded', initTheme);
+        // Initialize theme immediately to prevent flash
+        initTheme();
+        
+        // Add event listener for theme toggle
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 
         // Mobile menu functionality
