@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -94,7 +95,11 @@ func EncryptTextHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Successfully stored encrypted data for ID: %s", id)
 
-	viewURL := fmt.Sprintf("http://localhost:8080/view/%s", id)
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL == "" {
+		baseURL = "http://localhost:8080"
+	}
+	viewURL := fmt.Sprintf("%s/view/%s", baseURL, id)
 
 	responseHTML := fmt.Sprintf(`
 		<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
@@ -264,7 +269,11 @@ func EncryptFileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Successfully stored encrypted file data for ID: %s", id)
 
 	// Generate view URL
-	viewURL := fmt.Sprintf("http://localhost:8080/view-file/%s", id)
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL == "" {
+		baseURL = "http://localhost:8080"
+	}
+	viewURL := fmt.Sprintf("%s/view-file/%s", baseURL, id)
 
 	// Calculate file size in human-readable format
 	fileSize := formatFileSize(fileHeader.Size)

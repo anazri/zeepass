@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log"
-	"net/url"
 	"os"
 	"time"
 
@@ -19,31 +18,9 @@ var (
 )
 
 func InitRedis() {
-	redisURL := os.Getenv("REDIS_URL")
-	redisPassword := os.Getenv("REDIS_PASSWORD")
-	
-	var addr string
-	if redisURL != "" {
-		parsedURL, err := url.Parse(redisURL)
-		if err != nil {
-			log.Printf("Failed to parse REDIS_URL: %v", err)
-			addr = "redis:6379" // fallback
-		} else {
-			addr = parsedURL.Host
-			// If password is in URL, use it
-			if parsedURL.User != nil {
-				if pwd, set := parsedURL.User.Password(); set && pwd != "" {
-					redisPassword = pwd
-				}
-			}
-		}
-	} else {
-		addr = "redis:6379" // fallback
-	}
-	
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: redisPassword,
+		Addr:     os.Getenv("REDIS_URL"),
+		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	})
 
