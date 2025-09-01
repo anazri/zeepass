@@ -42,8 +42,9 @@ COPY --from=builder /app/zeepass .
 # Copy templates
 COPY --from=builder /app/templates ./templates
 
-# Change ownership to non-root user
-RUN chown -R zeepass:zeepass /app
+# Create data directory and change ownership to non-root user
+RUN mkdir -p /app/data && \
+    chown -R zeepass:zeepass /app
 
 # Switch to non-root user
 USER zeepass
