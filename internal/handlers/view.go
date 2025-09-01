@@ -62,7 +62,7 @@ func ViewEncryptedHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(html))
 			return
 		}
-		handleDecryptMessageWithData(w, r, freshData)
+		handleDecryptMessageWithData(w, r, id, freshData)
 		return
 	}
 
