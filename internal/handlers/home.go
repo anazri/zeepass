@@ -22,7 +22,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
 		log.Printf("Template execution error: %v", err)
 	}
 }
@@ -41,7 +40,6 @@ func TextEncryptionHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
 		log.Printf("Template execution error: %v", err)
 	}
 }
@@ -60,7 +58,6 @@ func FileEncryptionHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
 		log.Printf("Template execution error: %v", err)
 	}
 }
