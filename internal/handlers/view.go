@@ -265,6 +265,32 @@ func getWarningMessage(data *models.EncryptedData) string {
 	return ""
 }
 
+func getFileWarningMessage(data *models.EncryptedFileData) string {
+	if data.MaxViews == 1 {
+		return `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">⚠️ <strong>Warning:</strong> This file will be permanently deleted after downloading.</div>`
+	}
+	return ""
+}
+
+func formatFileSize(bytes int64) string {
+	if bytes == 0 {
+		return "0 Bytes"
+	}
+
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d Bytes", bytes)
+	}
+
+	div, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
+
 func ViewEncryptedFileHandler(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(r.URL.Path, "/")
 	if len(pathParts) < 3 {
@@ -370,7 +396,38 @@ func ViewEncryptedFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	downloadDecryptedFileWithData(w, r, id, data)
+	// Show a confirmation form for non-PIN protected files
+	fileSize := formatFileSize(data.FileSize)
+	html := fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html><head>
+		<title>Download File - ZeePass</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+		<div class="bg-white p-4 sm:p-8 rounded-lg shadow-md max-w-md w-full">
+			<div class="text-center mb-4 sm:mb-6">
+				<div class="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+					<svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+						<path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+					</svg>
+				</div>
+				<h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Encrypted File</h2>
+				<p class="text-sm sm:text-base text-gray-600">Click below to download this encrypted file.</p>
+				<div class="bg-gray-50 p-3 rounded border mt-4 mb-4">
+					<p><strong>File Name:</strong> %s</p>
+					<p><strong>File Size:</strong> %s</p>
+				</div>
+				%s
+			</div>
+			<form method="POST">
+				<button type="submit" class="w-full bg-blue-600 text-white py-3 sm:py-2 text-base sm:text-sm rounded-lg hover:bg-blue-700 transition font-medium">Download File</button>
+			</form>
+		</div>
+	</body></html>
+	`, data.FileName, fileSize, getFileWarningMessage(data))
+	w.Write([]byte(html))
 }
 
 func handleDecryptFileWithData(w http.ResponseWriter, r *http.Request, id string, data *models.EncryptedFileData) {
