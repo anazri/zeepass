@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log"
+	"os"
 	"time"
 
 	"github.com/anazri/zeepass/internal/models"
@@ -18,8 +19,8 @@ var (
 
 func InitRedis() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "lu7rodah8aefaiCi",
+		Addr:     os.Getenv("REDIS_URL"),
+		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	})
 
