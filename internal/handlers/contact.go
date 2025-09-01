@@ -153,6 +153,9 @@ func sendContactEmail(form ContactForm) error {
 		return fmt.Errorf("failed to marshal email request: %w", err)
 	}
 
+	// Debug log the JSON payload
+	fmt.Printf("Sending email with payload: %s\n", string(jsonData))
+
 	// Create HTTP request
 	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(jsonData))
 	if err != nil {
