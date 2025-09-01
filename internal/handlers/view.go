@@ -137,7 +137,33 @@ func ViewEncryptedHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	showDecryptedMessageWithData(w, r, id, data)
+	// Show a confirmation form for non-PIN protected messages
+	html := fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html><head>
+		<title>View Message - ZeePass</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+		<div class="bg-white p-4 sm:p-8 rounded-lg shadow-md max-w-md w-full">
+			<div class="text-center mb-4 sm:mb-6">
+				<div class="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+					<svg class="w-6 h-6 sm:w-8 sm:h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+						<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+					</svg>
+				</div>
+				<h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Encrypted Message</h2>
+				<p class="text-sm sm:text-base text-gray-600">Click below to view this encrypted message.</p>
+				%s
+			</div>
+			<form method="POST">
+				<button type="submit" class="w-full bg-green-600 text-white py-3 sm:py-2 text-base sm:text-sm rounded-lg hover:bg-green-700 transition font-medium">View Message</button>
+			</form>
+		</div>
+	</body></html>
+	`, getWarningMessage(data))
+	w.Write([]byte(html))
 }
 
 func handleDecryptMessageWithData(w http.ResponseWriter, r *http.Request, id string, data *models.EncryptedData) {
