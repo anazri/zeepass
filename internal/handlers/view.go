@@ -272,7 +272,6 @@ func getFileWarningMessage(data *models.EncryptedFileData) string {
 	return ""
 }
 
-
 func ViewEncryptedFileHandler(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(r.URL.Path, "/")
 	if len(pathParts) < 3 {

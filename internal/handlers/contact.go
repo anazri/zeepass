@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
-	"net/smtp"
 	"os"
 	"strings"
 	"time"
@@ -78,28 +80,30 @@ func HandleContact(w http.ResponseWriter, r *http.Request) {
 	`)
 }
 
+type ResendEmailRequest struct {
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	HTML    string `json:"html"`
+}
+
 func sendContactEmail(form ContactForm) error {
-	// Get SMTP configuration from environment variables
-	smtpHost := os.Getenv("SMTP_HOST")
-	smtpPort := os.Getenv("SMTP_PORT")
-	smtpUser := os.Getenv("SMTP_USER")
-	smtpPass := os.Getenv("SMTP_PASS")
+	// Get Resend configuration from environment variables
+	resendAPIKey := os.Getenv("RESEND_API_KEY")
+	fromEmail := os.Getenv("FROM_EMAIL")
 	toEmail := os.Getenv("CONTACT_EMAIL")
 
 	// Use defaults if not set
-	if smtpHost == "" {
-		smtpHost = "localhost"
-	}
-	if smtpPort == "" {
-		smtpPort = "587"
+	if fromEmail == "" {
+		fromEmail = "noreply@resend.dev"
 	}
 	if toEmail == "" {
 		toEmail = "contact@moonkite.io"
 	}
 
-	// If SMTP credentials are not configured, log the message instead
-	if smtpUser == "" || smtpPass == "" {
-		fmt.Printf("SMTP not configured. Contact form submission:\n")
+	// If Resend API key is not configured, log the message instead
+	if resendAPIKey == "" {
+		fmt.Printf("Resend API key not configured. Contact form submission:\n")
 		fmt.Printf("Name: %s\n", form.Name)
 		fmt.Printf("Email: %s\n", form.Email)
 		fmt.Printf("Company: %s\n", form.Company)
@@ -112,38 +116,74 @@ func sendContactEmail(form ContactForm) error {
 	// Create email content
 	subject := fmt.Sprintf("ZeePass Contact Form: %s", getInquiryTypeLabel(form.InquiryType))
 
-	body := fmt.Sprintf(`
-		New contact form submission from ZeePass website:
+	htmlBody := fmt.Sprintf(`
+		<h2>New contact form submission from ZeePass website</h2>
 		
-		Name: %s
-		Email: %s
-		Company: %s
-		Inquiry Type: %s
-		Timestamp: %s
+		<p><strong>Name:</strong> %s</p>
+		<p><strong>Email:</strong> %s</p>
+		<p><strong>Company:</strong> %s</p>
+		<p><strong>Inquiry Type:</strong> %s</p>
+		<p><strong>Timestamp:</strong> %s</p>
 		
-		Message:
-		%s
+		<h3>Message:</h3>
+		<p>%s</p>
 		
-		---
-		This email was sent automatically from the ZeePass contact form.
+		<hr>
+		<p><em>This email was sent automatically from the ZeePass contact form.</em></p>
 		`,
 		form.Name,
 		form.Email,
 		form.Company,
 		getInquiryTypeLabel(form.InquiryType),
 		time.Now().Format("2006-01-02 15:04:05"),
-		form.Message,
+		strings.ReplaceAll(form.Message, "\n", "<br>"),
 	)
 
-	// Create email message
-	msg := fmt.Sprintf("To: %s\r\nFrom: %s\r\nSubject: %s\r\n\r\n%s",
-		toEmail, smtpUser, subject, body)
+	// Create Resend email request
+	emailReq := ResendEmailRequest{
+		From:    fromEmail,
+		To:      toEmail,
+		Subject: subject,
+		HTML:    htmlBody,
+	}
 
-	// Send email
-	auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
-	addr := fmt.Sprintf("%s:%s", smtpHost, smtpPort)
+	// Convert to JSON
+	jsonData, err := json.Marshal(emailReq)
+	if err != nil {
+		return fmt.Errorf("failed to marshal email request: %w", err)
+	}
 
-	return smtp.SendMail(addr, auth, smtpUser, []string{toEmail}, []byte(msg))
+	// Create HTTP request
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+
+	// Set headers
+	req.Header.Set("Authorization", "Bearer "+resendAPIKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send HTTP request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Check if request was successful
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("resend API returned status %d: %s", resp.StatusCode, string(body))
+	}
+
+	fmt.Printf("Email sent successfully via Resend API\n")
+	return nil
 }
 
 func getInquiryTypeLabel(inquiryType string) string {

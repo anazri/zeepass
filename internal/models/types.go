@@ -24,17 +24,17 @@ type EncryptionRequest struct {
 }
 
 type EncryptedFileData struct {
-	ID         string     `json:"id"`
-	Content    []byte     `json:"content"`
-	FileName   string     `json:"file_name"`
-	FileSize   int64      `json:"file_size"`
-	MimeType   string     `json:"mime_type"`
-	PIN        string     `json:"pin,omitempty"`
-	Lifetime   string     `json:"lifetime"`
-	CreatedAt  time.Time  `json:"created_at"`
-	ExpiresAt  *time.Time `json:"expires_at,omitempty"`
-	ViewCount  int        `json:"view_count"`
-	MaxViews   int        `json:"max_views"`
+	ID        string     `json:"id"`
+	Content   []byte     `json:"content"`
+	FileName  string     `json:"file_name"`
+	FileSize  int64      `json:"file_size"`
+	MimeType  string     `json:"mime_type"`
+	PIN       string     `json:"pin,omitempty"`
+	Lifetime  string     `json:"lifetime"`
+	CreatedAt time.Time  `json:"created_at"`
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	ViewCount int        `json:"view_count"`
+	MaxViews  int        `json:"max_views"`
 }
 
 type EncryptionResponse struct {

@@ -15,19 +15,19 @@ import (
 )
 
 type ChatService struct {
-	rooms       map[string]*ChatRoom
-	roomMutex   sync.RWMutex
-	upgrader    websocket.Upgrader
-	redisClient *redis.Client
-	rateLimiter map[string]*RateLimiter
+	rooms        map[string]*ChatRoom
+	roomMutex    sync.RWMutex
+	upgrader     websocket.Upgrader
+	redisClient  *redis.Client
+	rateLimiter  map[string]*RateLimiter
 	limiterMutex sync.RWMutex
 }
 
 type RateLimiter struct {
-	tokens    int
-	capacity  int
+	tokens     int
+	capacity   int
 	lastRefill time.Time
-	mutex     sync.Mutex
+	mutex      sync.Mutex
 }
 
 type ChatRoom struct {
@@ -77,15 +77,15 @@ type WSMessage struct {
 
 var chatService *ChatService
 var messageConfig = MessageConfig{
-	MaxMessageSize:    4096,        // 4KB max message size
+	MaxMessageSize:    4096,           // 4KB max message size
 	MessageExpiration: 24 * time.Hour, // Messages expire after 24 hours
-	RateLimit:         30,          // 30 messages per minute per user
-	MaxRoomMessages:   1000,        // Store max 1000 messages per room
+	RateLimit:         30,             // 30 messages per minute per user
+	MaxRoomMessages:   1000,           // Store max 1000 messages per room
 }
 
 func init() {
 	chatService = &ChatService{
-		rooms: make(map[string]*ChatRoom),
+		rooms:       make(map[string]*ChatRoom),
 		rateLimiter: make(map[string]*RateLimiter),
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -96,10 +96,10 @@ func init() {
 			},
 		},
 	}
-	
+
 	// Initialize Redis client - will be set after InitRedis() is called
 	chatService.redisClient = nil
-	
+
 	// Start cleanup routines
 	go chatService.cleanupRoutine()
 	go chatService.expiredMessageCleanup()
@@ -121,12 +121,12 @@ func (cs *ChatService) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		log.Printf("WebSocket upgrade error: %v", err)
 		return
 	}
-	
+
 	client := &Client{
 		Conn: conn,
 		Send: make(chan []byte, 256),
 	}
-	
+
 	// Start goroutines for reading and writing
 	go client.writePump()
 	go client.readPump(cs)
@@ -136,7 +136,7 @@ func (cs *ChatService) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 func (cs *ChatService) CreateRoom(roomID, roomName string) *ChatRoom {
 	cs.roomMutex.Lock()
 	defer cs.roomMutex.Unlock()
-	
+
 	room := &ChatRoom{
 		ID:        roomID,
 		Name:      roomName,
@@ -144,7 +144,7 @@ func (cs *ChatService) CreateRoom(roomID, roomName string) *ChatRoom {
 		Messages:  make([]EncryptedMessage, 0),
 		CreatedAt: time.Now(),
 	}
-	
+
 	cs.rooms[roomID] = room
 	log.Printf("Created room: %s (%s)", roomName, roomID)
 	return room
@@ -162,28 +162,28 @@ func (cs *ChatService) JoinRoom(client *Client, roomID, userID, userName string)
 	cs.roomMutex.RLock()
 	room := cs.rooms[roomID]
 	cs.roomMutex.RUnlock()
-	
+
 	if room == nil {
 		// Room doesn't exist, create it
 		room = cs.CreateRoom(roomID, "Chat Room")
 	}
-	
+
 	room.mutex.Lock()
 	defer room.mutex.Unlock()
-	
+
 	client.Room = room
 	client.UserID = userID
 	client.UserName = userName
 	room.Clients[client] = true
-	
+
 	log.Printf("User %s (%s) joined room %s", userName, userID, roomID)
-	
+
 	// Send recent messages to new client
 	go cs.sendRecentMessages(client, room)
-	
+
 	// Notify other clients
 	cs.broadcastUserJoined(room, userName)
-	
+
 	return nil
 }
 
@@ -192,20 +192,20 @@ func (cs *ChatService) LeaveRoom(client *Client) {
 	if client.Room == nil {
 		return
 	}
-	
+
 	room := client.Room
 	room.mutex.Lock()
 	defer room.mutex.Unlock()
-	
+
 	if _, ok := room.Clients[client]; ok {
 		delete(room.Clients, client)
 		close(client.Send)
-		
+
 		log.Printf("User %s left room %s", client.UserName, room.ID)
-		
+
 		// Notify other clients
 		cs.broadcastUserLeft(room, client.UserName)
-		
+
 		// Clean up empty room
 		if len(room.Clients) == 0 {
 			cs.roomMutex.Lock()
@@ -222,21 +222,21 @@ func (cs *ChatService) BroadcastMessage(room *ChatRoom, message EncryptedMessage
 	if !cs.checkRateLimit(userID) {
 		return fmt.Errorf("rate limit exceeded")
 	}
-	
+
 	// Check message size
 	if len(message.Encrypted) > messageConfig.MaxMessageSize {
 		return fmt.Errorf("message too large: %d bytes (max: %d)", len(message.Encrypted), messageConfig.MaxMessageSize)
 	}
-	
+
 	room.mutex.Lock()
 	defer room.mutex.Unlock()
-	
+
 	// Prepare message
 	message.MessageID = generateMessageID()
 	message.Timestamp = time.Now()
 	message.ExpiresAt = time.Now().Add(messageConfig.MessageExpiration)
 	message.Size = len(message.Encrypted)
-	
+
 	// Store message in Redis (if available)
 	if cs.redisClient != nil {
 		if err := cs.storeMessageInRedis(message); err != nil {
@@ -244,22 +244,22 @@ func (cs *ChatService) BroadcastMessage(room *ChatRoom, message EncryptedMessage
 			// Continue without Redis - messages will be stored in memory
 		}
 	}
-	
+
 	// Also keep in memory for active clients (fallback)
 	room.Messages = append(room.Messages, message)
-	
+
 	// Keep only recent messages in memory
 	if len(room.Messages) > 100 {
 		room.Messages = room.Messages[len(room.Messages)-100:]
 	}
-	
+
 	// Broadcast to all clients
 	messageData, err := json.Marshal(message)
 	if err != nil {
 		log.Printf("Error marshaling message: %v", err)
 		return fmt.Errorf("failed to marshal message")
 	}
-	
+
 	for client := range room.Clients {
 		select {
 		case client.Send <- messageData:
@@ -269,13 +269,13 @@ func (cs *ChatService) BroadcastMessage(room *ChatRoom, message EncryptedMessage
 			close(client.Send)
 		}
 	}
-	
+
 	return nil
 }
 
 func (cs *ChatService) sendRecentMessages(client *Client, room *ChatRoom) {
 	var messages []EncryptedMessage
-	
+
 	// Try to get messages from Redis first (if Redis is available)
 	if cs.redisClient != nil {
 		redisMessages, err := cs.getMessagesFromRedis(room.ID, 50)
@@ -285,13 +285,13 @@ func (cs *ChatService) sendRecentMessages(client *Client, room *ChatRoom) {
 			messages = redisMessages
 		}
 	}
-	
+
 	// Fallback to in-memory messages if Redis failed or unavailable
 	if len(messages) == 0 {
 		room.mutex.RLock()
 		messages = room.Messages
 		room.mutex.RUnlock()
-		
+
 		// Send last 50 messages
 		start := 0
 		if len(messages) > 50 {
@@ -299,18 +299,18 @@ func (cs *ChatService) sendRecentMessages(client *Client, room *ChatRoom) {
 		}
 		messages = messages[start:]
 	}
-	
+
 	for _, message := range messages {
 		// Check if message has expired
 		if time.Now().After(message.ExpiresAt) {
 			continue
 		}
-		
+
 		messageData, err := json.Marshal(message)
 		if err != nil {
 			continue
 		}
-		
+
 		select {
 		case client.Send <- messageData:
 		default:
@@ -328,9 +328,9 @@ func (cs *ChatService) broadcastUserJoined(room *ChatRoom, userName string) {
 		IV:        "",
 		Timestamp: time.Now(),
 	}
-	
+
 	messageData, _ := json.Marshal(notification)
-	
+
 	for client := range room.Clients {
 		select {
 		case client.Send <- messageData:
@@ -348,9 +348,9 @@ func (cs *ChatService) broadcastUserLeft(room *ChatRoom, userName string) {
 		IV:        "",
 		Timestamp: time.Now(),
 	}
-	
+
 	messageData, _ := json.Marshal(notification)
-	
+
 	for client := range room.Clients {
 		select {
 		case client.Send <- messageData:
@@ -365,14 +365,14 @@ func (c *Client) readPump(cs *ChatService) {
 		cs.LeaveRoom(c)
 		c.Conn.Close()
 	}()
-	
+
 	c.Conn.SetReadLimit(512)
 	c.Conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	c.Conn.SetPongHandler(func(string) error {
 		c.Conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		return nil
 	})
-	
+
 	for {
 		_, messageData, err := c.Conn.ReadMessage()
 		if err != nil {
@@ -381,13 +381,13 @@ func (c *Client) readPump(cs *ChatService) {
 			}
 			break
 		}
-		
+
 		var wsMsg WSMessage
 		if err := json.Unmarshal(messageData, &wsMsg); err != nil {
 			log.Printf("Error unmarshaling message: %v", err)
 			continue
 		}
-		
+
 		// Handle different message types
 		switch wsMsg.Type {
 		case "join":
@@ -407,7 +407,7 @@ func (c *Client) readPump(cs *ChatService) {
 					log.Printf("Failed to broadcast message: %v", err)
 					// Send error back to client
 					errorMsg := map[string]string{
-						"type": "error",
+						"type":    "error",
 						"message": err.Error(),
 					}
 					if errorData, err := json.Marshal(errorMsg); err == nil {
@@ -428,7 +428,7 @@ func (c *Client) writePump() {
 		ticker.Stop()
 		c.Conn.Close()
 	}()
-	
+
 	for {
 		select {
 		case message, ok := <-c.Send:
@@ -437,24 +437,24 @@ func (c *Client) writePump() {
 				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-			
+
 			w, err := c.Conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return
 			}
 			w.Write(message)
-			
+
 			// Add queued messages
 			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write([]byte{'\n'})
 				w.Write(<-c.Send)
 			}
-			
+
 			if err := w.Close(); err != nil {
 				return
 			}
-			
+
 		case <-ticker.C:
 			c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
@@ -468,7 +468,7 @@ func (c *Client) writePump() {
 func (cs *ChatService) cleanupRoutine() {
 	ticker := time.NewTicker(30 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		cs.roomMutex.Lock()
 		for roomID, room := range cs.rooms {
@@ -476,7 +476,7 @@ func (cs *ChatService) cleanupRoutine() {
 			isEmpty := len(room.Clients) == 0
 			isOld := time.Since(room.CreatedAt) > 24*time.Hour
 			room.mutex.RUnlock()
-			
+
 			if isEmpty && isOld {
 				delete(cs.rooms, roomID)
 				log.Printf("Cleaned up old room: %s", roomID)
@@ -506,49 +506,49 @@ func generateRandomString(length int) string {
 // Redis storage functions
 func (cs *ChatService) storeMessageInRedis(message EncryptedMessage) error {
 	ctx := context.Background()
-	
+
 	// Store individual message with expiration
 	messageKey := fmt.Sprintf("msg:%s:%s", message.Room, message.MessageID)
 	messageData, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
-	
+
 	// Set message with expiration
 	if err := cs.redisClient.Set(ctx, messageKey, messageData, messageConfig.MessageExpiration).Err(); err != nil {
 		return err
 	}
-	
+
 	// Add to room message list (sorted set with timestamp as score)
 	roomKey := fmt.Sprintf("room:%s:messages", message.Room)
 	score := float64(message.Timestamp.Unix())
-	
+
 	if err := cs.redisClient.ZAdd(ctx, roomKey, &redis.Z{
 		Score:  score,
 		Member: message.MessageID,
 	}).Err(); err != nil {
 		return err
 	}
-	
+
 	// Set expiration for room message list
 	cs.redisClient.Expire(ctx, roomKey, messageConfig.MessageExpiration)
-	
+
 	// Trim to keep only recent messages
 	cs.redisClient.ZRemRangeByRank(ctx, roomKey, 0, int64(-messageConfig.MaxRoomMessages-1))
-	
+
 	return nil
 }
 
 func (cs *ChatService) getMessagesFromRedis(roomID string, limit int) ([]EncryptedMessage, error) {
 	ctx := context.Background()
-	
+
 	// Get recent message IDs from sorted set
 	roomKey := fmt.Sprintf("room:%s:messages", roomID)
 	messageIDs, err := cs.redisClient.ZRevRange(ctx, roomKey, 0, int64(limit-1)).Result()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var messages []EncryptedMessage
 	for _, messageID := range messageIDs {
 		messageKey := fmt.Sprintf("msg:%s:%s", roomID, messageID)
@@ -560,21 +560,21 @@ func (cs *ChatService) getMessagesFromRedis(roomID string, limit int) ([]Encrypt
 			log.Printf("Error getting message %s: %v", messageID, err)
 			continue
 		}
-		
+
 		var message EncryptedMessage
 		if err := json.Unmarshal([]byte(messageData), &message); err != nil {
 			log.Printf("Error unmarshaling message %s: %v", messageID, err)
 			continue
 		}
-		
+
 		messages = append(messages, message)
 	}
-	
+
 	// Reverse to get chronological order
 	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
 		messages[i], messages[j] = messages[j], messages[i]
 	}
-	
+
 	return messages, nil
 }
 
@@ -582,7 +582,7 @@ func (cs *ChatService) getMessagesFromRedis(roomID string, limit int) ([]Encrypt
 func (cs *ChatService) checkRateLimit(userID string) bool {
 	cs.limiterMutex.Lock()
 	defer cs.limiterMutex.Unlock()
-	
+
 	limiter, exists := cs.rateLimiter[userID]
 	if !exists {
 		limiter = &RateLimiter{
@@ -592,29 +592,29 @@ func (cs *ChatService) checkRateLimit(userID string) bool {
 		}
 		cs.rateLimiter[userID] = limiter
 	}
-	
+
 	return limiter.allow()
 }
 
 func (rl *RateLimiter) allow() bool {
 	rl.mutex.Lock()
 	defer rl.mutex.Unlock()
-	
+
 	now := time.Now()
 	elapsed := now.Sub(rl.lastRefill)
-	
+
 	// Refill tokens based on elapsed time (token bucket algorithm)
 	tokensToAdd := int(elapsed.Minutes())
 	if tokensToAdd > 0 {
 		rl.tokens = min(rl.capacity, rl.tokens+tokensToAdd)
 		rl.lastRefill = now
 	}
-	
+
 	if rl.tokens > 0 {
 		rl.tokens--
 		return true
 	}
-	
+
 	return false
 }
 
@@ -629,16 +629,16 @@ func min(a, b int) int {
 func (cs *ChatService) expiredMessageCleanup() {
 	ticker := time.NewTicker(1 * time.Hour)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		// Only run Redis cleanup if Redis is available
 		if cs.redisClient != nil {
 			ctx := context.Background()
-			
+
 			// Clean up expired messages
 			pattern := "msg:*:*"
 			iter := cs.redisClient.Scan(ctx, 0, pattern, 0).Iterator()
-			
+
 			for iter.Next(ctx) {
 				key := iter.Val()
 				// Check if key exists (expired keys are automatically removed)
@@ -655,7 +655,7 @@ func (cs *ChatService) expiredMessageCleanup() {
 				}
 			}
 		}
-		
+
 		// Clean up rate limiters for inactive users
 		cs.limiterMutex.Lock()
 		for userID, limiter := range cs.rateLimiter {
@@ -666,7 +666,7 @@ func (cs *ChatService) expiredMessageCleanup() {
 			limiter.mutex.Unlock()
 		}
 		cs.limiterMutex.Unlock()
-		
+
 		log.Printf("Completed expired message cleanup")
 	}
 }

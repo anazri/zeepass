@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"html/template"
-	"net/http"
 	"log"
+	"net/http"
 
 	"github.com/anazri/zeepass/internal/services"
 )

@@ -171,7 +171,7 @@ func TestGeneratePasswordEdgeCases(t *testing.T) {
 
 func TestGeneratePasswordUniqueness(t *testing.T) {
 	opts := PasswordOptions{Length: 16, UseNumbers: true, UseUppercase: true, UseLowercase: true, UseSymbols: true, Type: "random"}
-	
+
 	passwords := make(map[string]bool)
 	iterations := 100
 
@@ -296,7 +296,7 @@ func TestContainsSymbols(t *testing.T) {
 
 func TestPasswordCharsetValidation(t *testing.T) {
 	opts := PasswordOptions{Length: 10, UseNumbers: true, UseUppercase: true, UseLowercase: true, UseSymbols: true, Type: "random"}
-	
+
 	password, err := GeneratePassword(opts)
 	if err != nil {
 		t.Fatalf("GeneratePassword failed: %v", err)
@@ -307,7 +307,7 @@ func TestPasswordCharsetValidation(t *testing.T) {
 			(char >= 'A' && char <= 'Z') ||
 			(char >= 'a' && char <= 'z') ||
 			strings.ContainsRune(Symbols, char)
-		
+
 		if !validChar {
 			t.Errorf("Invalid character in password: %c", char)
 		}

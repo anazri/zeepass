@@ -13,6 +13,9 @@ services:
       - REDIS_URL=redis://redis:6379
       - GIN_MODE=release
       - PORT=8080
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL:-noreply@resend.dev}
+      - CONTACT_EMAIL=${CONTACT_EMAIL:-contact@moonkite.io}
     depends_on:
       - redis
     networks:

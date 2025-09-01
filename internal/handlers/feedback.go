@@ -174,7 +174,7 @@ func saveSurveyToFile(response SurveyResponse) error {
 	}
 
 	// Also log to console for immediate visibility
-	fmt.Printf("Survey response saved: ID=%s, Likelihood=%s, NPS=%d, Tools=%v, BusinessSector=%s, EnterpriseInterest=%s (Total responses: %d)\n", 
+	fmt.Printf("Survey response saved: ID=%s, Likelihood=%s, NPS=%d, Tools=%v, BusinessSector=%s, EnterpriseInterest=%s (Total responses: %d)\n",
 		response.ID, response.Likelihood, response.NPS, response.Tools, response.BusinessSector, response.EnterpriseInterest, len(responses))
 
 	return nil

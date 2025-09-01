@@ -279,7 +279,7 @@ func TestSSHKeyPairValidity(t *testing.T) {
 
 func TestGenerateSSHKeyUniqueness(t *testing.T) {
 	opts := SSHKeyOptions{Type: "ed25519", Comment: "test"}
-	
+
 	keyPair1, err := GenerateSSHKey(opts)
 	if err != nil {
 		t.Fatalf("GenerateSSHKey failed: %v", err)

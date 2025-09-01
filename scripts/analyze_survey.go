@@ -29,7 +29,7 @@ type SurveyResponse struct {
 
 func main() {
 	filePath := "data/survey_responses.json"
-	
+
 	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		fmt.Printf("Survey data file not found: %s\n", filePath)
@@ -85,7 +85,7 @@ func readSurveyResponses(filePath string) ([]SurveyResponse, error) {
 func analyzeLikelihood(responses []SurveyResponse) {
 	fmt.Printf("🎯 Likelihood to Use ZeePass:\n")
 	likelihood := make(map[string]int)
-	
+
 	for _, r := range responses {
 		if r.Likelihood != "" {
 			likelihood[r.Likelihood]++
@@ -94,11 +94,11 @@ func analyzeLikelihood(responses []SurveyResponse) {
 
 	order := []string{"very_likely", "somewhat_likely", "neutral", "unlikely", "very_unlikely"}
 	labels := map[string]string{
-		"very_likely":    "Very Likely",
-		"somewhat_likely": "Somewhat Likely", 
-		"neutral":        "Neutral",
-		"unlikely":       "Unlikely",
-		"very_unlikely":  "Very Unlikely",
+		"very_likely":     "Very Likely",
+		"somewhat_likely": "Somewhat Likely",
+		"neutral":         "Neutral",
+		"unlikely":        "Unlikely",
+		"very_unlikely":   "Very Unlikely",
 	}
 
 	for _, key := range order {
@@ -113,7 +113,7 @@ func analyzeLikelihood(responses []SurveyResponse) {
 func analyzeTools(responses []SurveyResponse) {
 	fmt.Printf("🔧 Most Interesting Tools:\n")
 	tools := make(map[string]int)
-	
+
 	for _, r := range responses {
 		for _, tool := range r.Tools {
 			tools[tool]++
@@ -124,15 +124,15 @@ func analyzeTools(responses []SurveyResponse) {
 		name  string
 		count int
 	}
-	
+
 	var sortedTools []toolCount
 	labels := map[string]string{
-		"text_encryption":   "Text Encryption",
-		"file_encryption":   "File Encryption",
-		"encrypted_chat":    "Encrypted Chat",
+		"text_encryption":    "Text Encryption",
+		"file_encryption":    "File Encryption",
+		"encrypted_chat":     "Encrypted Chat",
 		"password_generator": "Password Generator",
-		"ssh_key":          "SSH Key Generator",
-		"base64":           "Base64 Tools",
+		"ssh_key":            "SSH Key Generator",
+		"base64":             "Base64 Tools",
 	}
 
 	for tool, count := range tools {
@@ -157,7 +157,7 @@ func analyzeTools(responses []SurveyResponse) {
 func analyzeUseCases(responses []SurveyResponse) {
 	fmt.Printf("💡 Primary Use Cases:\n")
 	useCases := make(map[string]int)
-	
+
 	for _, r := range responses {
 		if r.UseCase != "" {
 			useCases[r.UseCase]++
@@ -169,15 +169,15 @@ func analyzeUseCases(responses []SurveyResponse) {
 		"team_collaboration": "Team/Work Collaboration",
 		"development_it":     "Development & IT Tasks",
 		"sensitive_sharing":  "Sharing Sensitive Information",
-		"learning":          "Learning About Encryption",
-		"other":             "Other",
+		"learning":           "Learning About Encryption",
+		"other":              "Other",
 	}
 
 	type useCaseCount struct {
 		name  string
 		count int
 	}
-	
+
 	var sortedUseCases []useCaseCount
 	for useCase, count := range useCases {
 		sortedUseCases = append(sortedUseCases, useCaseCount{useCase, count})
@@ -201,7 +201,7 @@ func analyzeUseCases(responses []SurveyResponse) {
 func analyzeConcerns(responses []SurveyResponse) {
 	fmt.Printf("⚠️  Main Concerns:\n")
 	concerns := make(map[string]int)
-	
+
 	for _, r := range responses {
 		if r.Concerns != "" {
 			concerns[r.Concerns]++
@@ -209,19 +209,19 @@ func analyzeConcerns(responses []SurveyResponse) {
 	}
 
 	labels := map[string]string{
-		"data_privacy":        "Data Privacy & Trust",
-		"ease_of_use":        "Ease of Use",
+		"data_privacy":         "Data Privacy & Trust",
+		"ease_of_use":          "Ease of Use",
 		"feature_completeness": "Feature Completeness",
-		"reliability":        "Reliability & Uptime",
-		"cost":               "Cost",
-		"other":              "Other",
+		"reliability":          "Reliability & Uptime",
+		"cost":                 "Cost",
+		"other":                "Other",
 	}
 
 	type concernCount struct {
 		name  string
 		count int
 	}
-	
+
 	var sortedConcerns []concernCount
 	for concern, count := range concerns {
 		sortedConcerns = append(sortedConcerns, concernCount{concern, count})
@@ -244,10 +244,10 @@ func analyzeConcerns(responses []SurveyResponse) {
 
 func analyzeNPS(responses []SurveyResponse) {
 	fmt.Printf("📊 Net Promoter Score (NPS):\n")
-	
+
 	npsScores := make([]int, 0, len(responses))
 	npsCount := make(map[int]int)
-	
+
 	for _, r := range responses {
 		if r.NPS >= 0 && r.NPS <= 10 {
 			npsScores = append(npsScores, r.NPS)
@@ -301,7 +301,7 @@ func analyzeNPS(responses []SurveyResponse) {
 
 func analyzeFeatureRequests(responses []SurveyResponse) {
 	fmt.Printf("💭 Feature Requests:\n")
-	
+
 	requests := make([]string, 0)
 	for _, r := range responses {
 		if strings.TrimSpace(r.FeatureRequest) != "" {
@@ -323,7 +323,7 @@ func analyzeFeatureRequests(responses []SurveyResponse) {
 
 func analyzeTimeline(responses []SurveyResponse) {
 	fmt.Printf("📅 Response Timeline:\n")
-	
+
 	if len(responses) == 0 {
 		return
 	}
@@ -338,7 +338,7 @@ func analyzeTimeline(responses []SurveyResponse) {
 
 	fmt.Printf("  First Response: %s\n", first.Format("2006-01-02 15:04:05"))
 	fmt.Printf("  Latest Response: %s\n", last.Format("2006-01-02 15:04:05"))
-	
+
 	if len(responses) > 1 {
 		duration := last.Sub(first)
 		fmt.Printf("  Time Span: %s\n", duration.String())
@@ -349,7 +349,7 @@ func analyzeTimeline(responses []SurveyResponse) {
 func analyzeBusinessSectors(responses []SurveyResponse) {
 	fmt.Printf("🏢 Business Sectors:\n")
 	sectors := make(map[string]int)
-	
+
 	for _, r := range responses {
 		if r.BusinessSector != "" {
 			sectors[r.BusinessSector]++
@@ -358,19 +358,19 @@ func analyzeBusinessSectors(responses []SurveyResponse) {
 
 	labels := map[string]string{
 		"technology":        "Technology/Software",
-		"finance":          "Finance/Banking",
-		"healthcare":       "Healthcare/Medical", 
-		"government":       "Government/Public Sector",
-		"education":        "Education/Research",
-		"legal":            "Legal/Law Firm",
-		"consulting":       "Consulting",
-		"manufacturing":    "Manufacturing",
-		"retail":           "Retail/E-commerce",
-		"media":            "Media/Communications",
-		"nonprofit":        "Non-profit/NGO",
-		"freelance":        "Freelance/Independent",
-		"student":          "Student",
-		"other":            "Other",
+		"finance":           "Finance/Banking",
+		"healthcare":        "Healthcare/Medical",
+		"government":        "Government/Public Sector",
+		"education":         "Education/Research",
+		"legal":             "Legal/Law Firm",
+		"consulting":        "Consulting",
+		"manufacturing":     "Manufacturing",
+		"retail":            "Retail/E-commerce",
+		"media":             "Media/Communications",
+		"nonprofit":         "Non-profit/NGO",
+		"freelance":         "Freelance/Independent",
+		"student":           "Student",
+		"other":             "Other",
 		"prefer_not_to_say": "Prefer not to say",
 	}
 
@@ -378,7 +378,7 @@ func analyzeBusinessSectors(responses []SurveyResponse) {
 		name  string
 		count int
 	}
-	
+
 	var sortedSectors []sectorCount
 	for sector, count := range sectors {
 		sortedSectors = append(sortedSectors, sectorCount{sector, count})
@@ -402,7 +402,7 @@ func analyzeBusinessSectors(responses []SurveyResponse) {
 func analyzeEnterpriseInterest(responses []SurveyResponse) {
 	fmt.Printf("🏢 Enterprise Deployment Interest:\n")
 	interest := make(map[string]int)
-	
+
 	for _, r := range responses {
 		if r.EnterpriseInterest != "" {
 			interest[r.EnterpriseInterest]++
@@ -410,18 +410,18 @@ func analyzeEnterpriseInterest(responses []SurveyResponse) {
 	}
 
 	labels := map[string]string{
-		"very_interested":    "Very Interested - wants to discuss immediately",
+		"very_interested":     "Very Interested - wants to discuss immediately",
 		"somewhat_interested": "Somewhat Interested - might consider in future",
-		"need_more_info":     "Needs More Information",
-		"not_interested":     "Not Interested - prefers public version",
-		"individual_user":    "Individual User - not representing organization",
+		"need_more_info":      "Needs More Information",
+		"not_interested":      "Not Interested - prefers public version",
+		"individual_user":     "Individual User - not representing organization",
 	}
 
 	type interestCount struct {
 		name  string
 		count int
 	}
-	
+
 	var sortedInterest []interestCount
 	for int_type, count := range interest {
 		sortedInterest = append(sortedInterest, interestCount{int_type, count})
@@ -439,13 +439,13 @@ func analyzeEnterpriseInterest(responses []SurveyResponse) {
 			label = ic.name
 		}
 		fmt.Printf("  %s: %d (%.1f%%)\n", label, ic.count, percentage)
-		
+
 		// Count potential leads
 		if ic.name == "very_interested" || ic.name == "somewhat_interested" || ic.name == "need_more_info" {
 			potentialLeads += ic.count
 		}
 	}
-	
+
 	if potentialLeads > 0 {
 		leadPercentage := float64(potentialLeads) / float64(len(responses)) * 100
 		fmt.Printf("  🎯 Potential Enterprise Leads: %d (%.1f%%)\n", potentialLeads, leadPercentage)
