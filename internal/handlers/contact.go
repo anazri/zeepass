@@ -57,26 +57,86 @@ func HandleContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return success response (you could redirect to a thank you page)
+	// Return success response that matches the app's design system
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `
-	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-		<div class="bg-white rounded-lg p-8 max-w-md mx-4">
-			<div class="text-center">
-				<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-					<svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-					</svg>
+	<!DOCTYPE html>
+	<html lang="en" class="scroll-smooth">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Message Sent - ZeePass</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script>
+			tailwind.config = {
+				darkMode: 'class',
+				theme: {
+					extend: {
+						animation: {
+							'fade-in': 'fadeIn 0.5s ease-in-out',
+							'slide-up': 'slideUp 0.3s ease-out',
+						}
+					}
+				}
+			}
+		</script>
+		<style>
+			.theme-transition {
+				transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+			}
+			@keyframes fadeIn {
+				from { opacity: 0; }
+				to { opacity: 1; }
+			}
+			@keyframes slideUp {
+				from { transform: translateY(20px); opacity: 0; }
+				to { transform: translateY(0); opacity: 1; }
+			}
+		</style>
+		<script>
+			// Apply saved theme on page load
+			if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+				document.documentElement.classList.add('dark');
+			}
+		</script>
+	</head>
+	<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 theme-transition">
+		<div class="min-h-screen flex items-center justify-center px-4 py-8">
+			<div class="max-w-md w-full">
+				<div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 theme-transition animate-slide-up">
+					<div class="text-center">
+						<div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+							<svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+							</svg>
+						</div>
+						<h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">Message Sent Successfully!</h1>
+						<p class="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+							Thank you for reaching out to us. We've received your message and will get back to you within 24 hours.
+						</p>
+						<div class="space-y-3">
+							<button onclick="window.location.href='/'" 
+									class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold transition theme-transition">
+								Return to Homepage
+							</button>
+							<button onclick="window.history.back()" 
+									class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-3 px-6 rounded-lg font-medium transition theme-transition">
+								Go Back
+							</button>
+						</div>
+					</div>
 				</div>
-				<h3 class="text-xl font-semibold text-gray-800 mb-2">Message Sent!</h3>
-				<p class="text-gray-600 mb-6">Thank you for contacting us. We'll get back to you within 24 hours.</p>
-				<button onclick="window.location.reload()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-					Close
-				</button>
+				<div class="text-center mt-6">
+					<p class="text-sm text-gray-500 dark:text-gray-400">
+						Need immediate assistance? Contact us at 
+						<a href="mailto:contact@moonkite.io" class="text-blue-600 dark:text-blue-400 hover:underline">contact@moonkite.io</a>
+					</p>
+				</div>
 			</div>
 		</div>
-	</div>
+	</body>
+	</html>
 	`)
 }
 
