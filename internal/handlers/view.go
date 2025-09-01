@@ -42,7 +42,27 @@ func ViewEncryptedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodPost {
-		handleDecryptMessageWithData(w, r, id, data)
+		// Re-fetch data for POST requests to ensure it's still available
+		freshData, err := services.GetEncryptedData(id)
+		if err != nil {
+			log.Printf("Message %s no longer available for decryption: %v", id, err)
+			html := `
+			<!DOCTYPE html>
+			<html><head><title>Message Not Found - ZeePass</title>
+			<script src="https://cdn.tailwindcss.com"></script></head>
+			<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+				<div class="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
+					<div class="text-red-500 mb-4"><svg class="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
+					<h2 class="text-2xl font-bold text-gray-800 mb-4">Message Not Found</h2>
+					<p class="text-gray-600 mb-6">This encrypted message does not exist or has expired.</p>
+					<a href="/" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Go Home</a>
+				</div>
+			</body></html>
+			`
+			w.Write([]byte(html))
+			return
+		}
+		handleDecryptMessageWithData(w, r, freshData)
 		return
 	}
 
