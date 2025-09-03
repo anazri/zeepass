@@ -50,6 +50,7 @@ var spamKeywords = []string{
 
 // Email validation regex
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
 func HandleContact(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -353,13 +354,13 @@ func isValidEmail(email string) bool {
 func checkRateLimit(clientIP string) bool {
 	rateMutex.Lock()
 	defer rateMutex.Unlock()
-	
+
 	now := time.Now()
 	cutoff := now.Add(-timeWindow)
-	
+
 	// Get existing requests for this IP
 	requests := rateLimiter[clientIP]
-	
+
 	// Filter out old requests
 	var validRequests []time.Time
 	for _, reqTime := range requests {
@@ -367,51 +368,45 @@ func checkRateLimit(clientIP string) bool {
 			validRequests = append(validRequests, reqTime)
 		}
 	}
-	
+
 	// Check if under limit
 	if len(validRequests) >= maxRequests {
 		return false
 	}
-	
+
 	// Add current request
 	validRequests = append(validRequests, now)
 	rateLimiter[clientIP] = validRequests
-	
+
 	return true
 }
 
 // Spam filtering function
 func containsSpam(text string) bool {
 	lowerText := strings.ToLower(text)
-	
+
 	// Check for spam keywords
 	for _, keyword := range spamKeywords {
 		if strings.Contains(lowerText, keyword) {
 			return true
 		}
 	}
-	
+
 	// Check for excessive links (more than 2 URLs)
 	urlCount := strings.Count(lowerText, "http://") + strings.Count(lowerText, "https://") + strings.Count(lowerText, "www.")
 	if urlCount > 2 {
 		return true
 	}
-	
-	// Check for excessive repetitive characters
-	repeatPattern := regexp.MustCompile(`(.)\1{4,}`) // 5 or more repeated characters
-	if repeatPattern.MatchString(text) {
-		return true
-	}
-	
+
+
 	return false
 }
-
 
 func verifyCaptcha(response, remoteIP string) bool {
 	recaptchaSecret := os.Getenv("RECAPTCHA_SECRET_KEY")
 	if recaptchaSecret == "" {
 		// If no secret key is configured, skip CAPTCHA verification in development
-		fmt.Println("Warning: RECAPTCHA_SECRET_KEY not configured, skipping CAPTCHA verification")
+		fmt.Println("Warning: RECAPTCHA_ScontactECRET_KEY not configured, skipping CAPTCHA verification")
 		return true
 	}
 
