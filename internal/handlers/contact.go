@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -18,6 +20,7 @@ type ContactForm struct {
 	Company     string `form:"company"`
 	InquiryType string `form:"inquiry_type"`
 	Message     string `form:"message"`
+	Website     string `form:"website"` // Honeypot field
 }
 
 type RecaptchaResponse struct {
@@ -29,9 +32,34 @@ type RecaptchaResponse struct {
 	ErrorCodes  []string `json:"error-codes"`
 }
 
+// Rate limiting
+var (
+	rateLimiter = make(map[string][]time.Time)
+	rateMutex   = sync.RWMutex{}
+	maxRequests = 3                // Max requests per time window
+	timeWindow  = 10 * time.Minute // Time window for rate limiting
+)
+
+// Spam keywords to filter
+var spamKeywords = []string{
+	"viagra", "casino", "lottery", "bitcoin", "crypto", "investment",
+	"make money", "get rich", "buy now", "click here", "free money",
+	"guaranteed", "no risk", "limited time", "act now", "cheap",
+	"discount", "save money", "earn cash", "work from home",
+}
+
+// Email validation regex
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 func HandleContact(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Rate limiting check
+	clientIP := getClientIP(r)
+	if !checkRateLimit(clientIP) {
+		http.Error(w, "Too many requests. Please try again later.", http.StatusTooManyRequests)
 		return
 	}
 
@@ -47,26 +75,46 @@ func HandleContact(w http.ResponseWriter, r *http.Request) {
 		Company:     strings.TrimSpace(r.FormValue("company")),
 		InquiryType: strings.TrimSpace(r.FormValue("inquiry_type")),
 		Message:     strings.TrimSpace(r.FormValue("message")),
+		Website:     strings.TrimSpace(r.FormValue("website")), // Honeypot
 	}
 
-	// Basic validation
+	// Honeypot check - if filled, it's likely spam
+	if form.Website != "" {
+		http.Error(w, "Spam detected", http.StatusBadRequest)
+		return
+	}
+
+	// Enhanced validation
 	if form.Name == "" || form.Email == "" || form.Message == "" {
 		http.Error(w, "Name, email, and message are required", http.StatusBadRequest)
 		return
 	}
 
+	// Length validation
+	if len(form.Name) > 100 || len(form.Email) > 255 || len(form.Company) > 100 {
+		http.Error(w, "Input too long", http.StatusBadRequest)
+		return
+	}
+
+	if len(form.Message) < 10 || len(form.Message) > 5000 {
+		http.Error(w, "Message must be between 10 and 5000 characters", http.StatusBadRequest)
+		return
+	}
+
+	// Email validation
 	if !isValidEmail(form.Email) {
 		http.Error(w, "Invalid email address", http.StatusBadRequest)
 		return
 	}
 
-	// Verify CAPTCHA
-	recaptchaResponse := strings.TrimSpace(r.FormValue("g-recaptcha-response"))
-	if recaptchaResponse == "" {
-		http.Error(w, "CAPTCHA verification is required", http.StatusBadRequest)
+	// Spam content filtering
+	if containsSpam(form.Message) || containsSpam(form.Name) {
+		http.Error(w, "Message contains inappropriate content", http.StatusBadRequest)
 		return
 	}
 
+	// Verify CAPTCHA (if enabled)
+	recaptchaResponse := strings.TrimSpace(r.FormValue("g-recaptcha-response"))
 	if !verifyCaptcha(recaptchaResponse, r.RemoteAddr) {
 		http.Error(w, "CAPTCHA verification failed. Please try again.", http.StatusBadRequest)
 		return
@@ -293,9 +341,71 @@ func getInquiryTypeLabel(inquiryType string) string {
 }
 
 func isValidEmail(email string) bool {
-	// Basic email validation
-	return strings.Contains(email, "@") && strings.Contains(email, ".") && len(email) > 5
+	// Enhanced email validation with regex
+	if len(email) > 255 {
+		return false
+	}
+	return emailRegex.MatchString(email)
 }
+
+// Rate limiting functions
+
+func checkRateLimit(clientIP string) bool {
+	rateMutex.Lock()
+	defer rateMutex.Unlock()
+	
+	now := time.Now()
+	cutoff := now.Add(-timeWindow)
+	
+	// Get existing requests for this IP
+	requests := rateLimiter[clientIP]
+	
+	// Filter out old requests
+	var validRequests []time.Time
+	for _, reqTime := range requests {
+		if reqTime.After(cutoff) {
+			validRequests = append(validRequests, reqTime)
+		}
+	}
+	
+	// Check if under limit
+	if len(validRequests) >= maxRequests {
+		return false
+	}
+	
+	// Add current request
+	validRequests = append(validRequests, now)
+	rateLimiter[clientIP] = validRequests
+	
+	return true
+}
+
+// Spam filtering function
+func containsSpam(text string) bool {
+	lowerText := strings.ToLower(text)
+	
+	// Check for spam keywords
+	for _, keyword := range spamKeywords {
+		if strings.Contains(lowerText, keyword) {
+			return true
+		}
+	}
+	
+	// Check for excessive links (more than 2 URLs)
+	urlCount := strings.Count(lowerText, "http://") + strings.Count(lowerText, "https://") + strings.Count(lowerText, "www.")
+	if urlCount > 2 {
+		return true
+	}
+	
+	// Check for excessive repetitive characters
+	repeatPattern := regexp.MustCompile(`(.)\1{4,}`) // 5 or more repeated characters
+	if repeatPattern.MatchString(text) {
+		return true
+	}
+	
+	return false
+}
+
 
 func verifyCaptcha(response, remoteIP string) bool {
 	recaptchaSecret := os.Getenv("RECAPTCHA_SECRET_KEY")
@@ -303,6 +413,12 @@ func verifyCaptcha(response, remoteIP string) bool {
 		// If no secret key is configured, skip CAPTCHA verification in development
 		fmt.Println("Warning: RECAPTCHA_SECRET_KEY not configured, skipping CAPTCHA verification")
 		return true
+	}
+
+	// If no response provided and CAPTCHA is enabled, fail verification
+	if response == "" {
+		fmt.Println("CAPTCHA response is required but not provided")
+		return false
 	}
 
 	// Prepare form data for Google reCAPTCHA API

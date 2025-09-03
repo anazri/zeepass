@@ -561,6 +561,9 @@
                                   placeholder="Tell us how we can help you..."></textarea>
                     </div>
 
+                    <!-- Honeypot field for spam prevention -->
+                    <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+
                     <!-- reCAPTCHA -->
                     {{if .RecaptchaSiteKey}}
                     <div class="flex justify-center">
