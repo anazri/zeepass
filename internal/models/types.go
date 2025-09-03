@@ -3,7 +3,8 @@ package models
 import "time"
 
 type PageData struct {
-	Title string
+	Title           string
+	RecaptchaSiteKey string
 }
 
 type EncryptedData struct {

@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/anazri/zeepass/internal/models"
 )
@@ -17,7 +18,8 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := models.PageData{
-		Title: "ZeePass - Encrypt your data easily",
+		Title:           "ZeePass - Encrypt your data easily",
+		RecaptchaSiteKey: os.Getenv("RECAPTCHA_SITE_KEY"),
 	}
 
 	err = tmpl.Execute(w, data)
