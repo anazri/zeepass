@@ -8,7 +8,7 @@
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23667eea'%3E%3Cpath fill-rule='evenodd' d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z' clip-rule='evenodd'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js?render={{.RecaptchaSiteKey}}" async defer></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -564,14 +564,18 @@
                     <!-- Honeypot field for spam prevention -->
                     <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
 
-                    <!-- reCAPTCHA -->
+                    <!-- reCAPTCHA v3 notice -->
                     {{if .RecaptchaSiteKey}}
                     <div class="flex justify-center">
-                        <div class="g-recaptcha" data-sitekey="{{.RecaptchaSiteKey}}"></div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            This site is protected by reCAPTCHA and the Google 
+                            <a href="https://policies.google.com/privacy" class="text-blue-500 hover:underline" target="_blank" rel="noopener">Privacy Policy</a> and 
+                            <a href="https://policies.google.com/terms" class="text-blue-500 hover:underline" target="_blank" rel="noopener">Terms of Service</a> apply.
+                        </p>
                     </div>
                     {{else}}
                     <div class="flex justify-center">
-                        <p class="text-sm text-gray-600 dark:text-gray-400">reCAPTCHA is disabled in development mode</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">reCAPTCHA is disabled in development mode</p>
                     </div>
                     {{end}}
 
@@ -705,22 +709,45 @@
         
         if (form) {
             form.addEventListener('submit', function(e) {
-                // Check if reCAPTCHA is enabled (site key exists)
-                const recaptchaElement = document.querySelector('.g-recaptcha');
+                e.preventDefault(); // Always prevent default to handle CAPTCHA
                 
-                if (recaptchaElement && typeof grecaptcha !== 'undefined') {
-                    const recaptchaResponse = grecaptcha.getResponse();
-                    
-                    if (recaptchaResponse.length === 0) {
-                        e.preventDefault();
-                        alert('Please complete the CAPTCHA verification.');
-                        return false;
-                    }
-                }
-                
-                // Disable submit button to prevent double submission
+                // Disable submit button immediately
                 submitBtn.disabled = true;
-                submitBtn.textContent = 'Sending...';
+                submitBtn.textContent = 'Verifying...';
+                
+                // Check if reCAPTCHA v3 is enabled
+                const siteKey = '{{.RecaptchaSiteKey}}';
+                
+                if (siteKey && typeof grecaptcha !== 'undefined') {
+                    // Use reCAPTCHA v3
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute(siteKey, {action: 'contact_form'}).then(function(token) {
+                            // Add the token to the form
+                            let tokenInput = document.querySelector('input[name="g-recaptcha-response"]');
+                            if (!tokenInput) {
+                                tokenInput = document.createElement('input');
+                                tokenInput.type = 'hidden';
+                                tokenInput.name = 'g-recaptcha-response';
+                                form.appendChild(tokenInput);
+                            }
+                            tokenInput.value = token;
+                            
+                            // Update button text and submit
+                            submitBtn.textContent = 'Sending...';
+                            form.submit();
+                        }).catch(function(error) {
+                            console.error('reCAPTCHA error:', error);
+                            // Re-enable button on error
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Send Message';
+                            alert('CAPTCHA verification failed. Please try again.');
+                        });
+                    });
+                } else {
+                    // No CAPTCHA, submit directly
+                    submitBtn.textContent = 'Sending...';
+                    form.submit();
+                }
             });
         }
     });
