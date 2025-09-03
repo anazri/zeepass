@@ -455,13 +455,19 @@ func verifyCaptcha(response, remoteIP string) bool {
 		return false
 	}
 
-	// For reCAPTCHA v3, you can also check the score (0.0-1.0, higher is more likely to be human)
-	// Uncomment and adjust threshold as needed:
-	// if recaptchaResp.Score < 0.5 {
-	//     fmt.Printf("CAPTCHA score too low: %f\n", recaptchaResp.Score)
-	//     return false
-	// }
+	// For reCAPTCHA v3, check the score (0.0-1.0, higher is more likely to be human)
+	// Score of 0.5 is a reasonable threshold for contact forms
+	if recaptchaResp.Score < 0.5 {
+		fmt.Printf("CAPTCHA score too low: %f (threshold: 0.5)\n", recaptchaResp.Score)
+		return false
+	}
 
-	fmt.Printf("CAPTCHA verification successful (score: %f)\n", recaptchaResp.Score)
+	// Verify the action matches what we expect
+	if recaptchaResp.Action != "contact_form" {
+		fmt.Printf("CAPTCHA action mismatch: expected 'contact_form', got '%s'\n", recaptchaResp.Action)
+		return false
+	}
+
+	fmt.Printf("CAPTCHA verification successful (score: %f, action: %s)\n", recaptchaResp.Score, recaptchaResp.Action)
 	return true
 }
