@@ -23,7 +23,8 @@
                 }
             }
         }
-        
+    </script>
+    <script>
         // Initialize theme immediately to prevent flash
         (function() {
             const savedTheme = localStorage.getItem('theme');
@@ -31,6 +32,8 @@
             
             if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
                 document.documentElement.classList.add('dark');
+            } else if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
             }
         })();
     </script>
@@ -146,6 +149,14 @@
             75% { transform: translateX(5px); }
         }
     </style>
+    <script>
+        // Apply saved theme on page load to prevent flash
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 theme-transition">
     <!-- Header -->
@@ -501,9 +512,11 @@
         // Theme Management
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             
-            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
                 document.documentElement.classList.add('dark');
             }
         }
@@ -519,13 +532,12 @@
                 localStorage.setItem('theme', 'dark');
             }
         }
-
-
-        // Initialize theme immediately to prevent flash
-        initTheme();
         
         // Add event listener for theme toggle
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        
+        // Initialize theme immediately
+        initTheme();
 
         // Mobile menu functionality
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -1102,7 +1114,22 @@
 
         // Initialize Base64 Converter when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
+            // Re-initialize theme to ensure it's working properly
+            initTheme();
+            
+            // Initialize Base64 Converter
             new Base64Converter();
+        });
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                if (e.matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
         });
     </script>
 </body>
