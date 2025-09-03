@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -17,6 +18,15 @@ type ContactForm struct {
 	Company     string `form:"company"`
 	InquiryType string `form:"inquiry_type"`
 	Message     string `form:"message"`
+}
+
+type RecaptchaResponse struct {
+	Success     bool     `json:"success"`
+	Score       float64  `json:"score"`
+	Action      string   `json:"action"`
+	ChallengeTS string   `json:"challenge_ts"`
+	Hostname    string   `json:"hostname"`
+	ErrorCodes  []string `json:"error-codes"`
 }
 
 func HandleContact(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +57,18 @@ func HandleContact(w http.ResponseWriter, r *http.Request) {
 
 	if !isValidEmail(form.Email) {
 		http.Error(w, "Invalid email address", http.StatusBadRequest)
+		return
+	}
+
+	// Verify CAPTCHA
+	recaptchaResponse := strings.TrimSpace(r.FormValue("g-recaptcha-response"))
+	if recaptchaResponse == "" {
+		http.Error(w, "CAPTCHA verification is required", http.StatusBadRequest)
+		return
+	}
+
+	if !verifyCaptcha(recaptchaResponse, r.RemoteAddr) {
+		http.Error(w, "CAPTCHA verification failed. Please try again.", http.StatusBadRequest)
 		return
 	}
 
@@ -273,4 +295,57 @@ func getInquiryTypeLabel(inquiryType string) string {
 func isValidEmail(email string) bool {
 	// Basic email validation
 	return strings.Contains(email, "@") && strings.Contains(email, ".") && len(email) > 5
+}
+
+func verifyCaptcha(response, remoteIP string) bool {
+	recaptchaSecret := os.Getenv("RECAPTCHA_SECRET_KEY")
+	if recaptchaSecret == "" {
+		// If no secret key is configured, skip CAPTCHA verification in development
+		fmt.Println("Warning: RECAPTCHA_SECRET_KEY not configured, skipping CAPTCHA verification")
+		return true
+	}
+
+	// Prepare form data for Google reCAPTCHA API
+	formData := url.Values{}
+	formData.Set("secret", recaptchaSecret)
+	formData.Set("response", response)
+	formData.Set("remoteip", remoteIP)
+
+	// Make request to Google reCAPTCHA API
+	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify", formData)
+	if err != nil {
+		fmt.Printf("Error verifying CAPTCHA: %v\n", err)
+		return false
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Error reading CAPTCHA response: %v\n", err)
+		return false
+	}
+
+	// Parse JSON response
+	var recaptchaResp RecaptchaResponse
+	if err := json.Unmarshal(body, &recaptchaResp); err != nil {
+		fmt.Printf("Error parsing CAPTCHA response: %v\n", err)
+		return false
+	}
+
+	// Check if verification was successful
+	if !recaptchaResp.Success {
+		fmt.Printf("CAPTCHA verification failed: %v\n", recaptchaResp.ErrorCodes)
+		return false
+	}
+
+	// For reCAPTCHA v3, you can also check the score (0.0-1.0, higher is more likely to be human)
+	// Uncomment and adjust threshold as needed:
+	// if recaptchaResp.Score < 0.5 {
+	//     fmt.Printf("CAPTCHA score too low: %f\n", recaptchaResp.Score)
+	//     return false
+	// }
+
+	fmt.Printf("CAPTCHA verification successful (score: %f)\n", recaptchaResp.Score)
+	return true
 }
