@@ -3,15 +3,13 @@ version: '3.8'
 services:
   # ZeePass Application
   zeepass:
-    build: 
-      context: ..
-      dockerfile: Dockerfile
+    image: zeepass/zeepass:latest
+    env_file:
+      - .env
     expose:
       - "8080"
-    environment:
-      - REDIS_URL=redis://redis:6379
-      - GIN_MODE=release
-      - PORT=8080
+    volumes:
+      - zp-data:/app/data
     depends_on:
       - redis
     networks:
@@ -23,9 +21,7 @@ services:
       retries: 3
       start_period: 40s
     deploy:
-      replicas: 2
-      placement:
-        max_replicas_per_node: 1
+      replicas: 1
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -76,8 +72,14 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - nginx-logs:/var/log/nginx
+      - ./nginx/logs:/var/log/nginx
       - ./nginx/html:/usr/share/nginx/html:ro
+    command: >
+      sh -c "
+      rm -f /var/log/nginx/access.log /var/log/nginx/error.log &&
+      touch /var/log/nginx/access.log /var/log/nginx/error.log &&
+      chown nginx:nginx /var/log/nginx/*.log &&
+      nginx -g 'daemon off;'"
     depends_on:
       - zeepass
     networks:
@@ -87,10 +89,13 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
-      replicas: 2
-      placement:
-        max_replicas_per_node: 1
+      replicas: 1
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -101,26 +106,17 @@ services:
         delay: 10s
         failure_action: rollback
 
-  # GoAccess - Real-time Web Log Analyzer
-  goaccess:
-    image: allinurl/goaccess:latest
+  # Matomo - Web Analytics
+  matomo:
+    image: matomo:5-apache
     ports:
-      - "7890:7890"
+      - "8081:80"
     volumes:
-      - nginx-logs:/var/log/nginx:ro
-      - ./goaccess:/etc/goaccess:ro
-      - goaccess-data:/var/lib/goaccess
-    command: >
-      goaccess /var/log/nginx/access.log
-      --config-file=/etc/goaccess/goaccess.conf
-      --output=/var/lib/goaccess/report.html
-      --real-time-html
-      --ws-url=ws://localhost:7890
-      --port=7890
-      --addr=0.0.0.0
-      --daemonize
+      - matomo-data:/var/www/html
+    env_file:
+      - .env
     depends_on:
-      - nginx
+      - db
     networks:
       - zeepass-network
     deploy:
@@ -133,6 +129,54 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
+
+  # Matomo Database
+  db:
+    image: mysql:8.0
+    volumes:
+      - matomo-db:/var/lib/mysql
+    env_file:
+      - .env
+    networks:
+      - zeepass-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  # Matomo Log Analytics (runs hourly)
+  log-analytics:
+    image: matomo/log-analytics:latest
+    volumes:
+      - ./nginx/logs:/logs:ro
+      - matomo-data:/var/www/html:ro
+    command: >
+      sh -c "
+      echo 'Starting log analytics...';
+      while true; do
+        echo 'Waiting 1 hour...';
+        sleep 3600;
+        echo 'Processing logs...';
+        if [ -f /logs/access.log ]; then
+          python /opt/matomo-log-analytics/import_logs.py --url=http://matomo:80 --login=admin --password=admin --recorders=4 /logs/access.log || echo 'Import failed';
+        else
+          echo 'No access.log found';
+        fi;
+      done"
+    depends_on:
+      - matomo
+    networks:
+      - zeepass-network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
 
   # Uptime Monitor (Uptime Kuma)
   uptime-kuma:
@@ -168,9 +212,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     cap_add:
       - SYS_PTRACE
-    environment:
-      - NETDATA_CLAIM_TOKEN=
-      - NETDATA_CLAIM_ROOMS=
+    env_file:
+      - .env
     networks:
       - zeepass-network
     deploy:
@@ -187,7 +230,8 @@ networks:
     attachable: true
 
 volumes:
+  zp-data:
   redis-data:
-  nginx-logs:
-  goaccess-data:
   uptime-data:
+  matomo-data:
+  matomo-db:
