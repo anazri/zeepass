@@ -48,8 +48,11 @@
 
 ### 📋 **Base64 Tools**
 - **Encode/Decode text** to/from Base64
+- **File encoding** - Upload files (up to 10MB) and convert to Base64
+- **File decoding** - Convert Base64 back to downloadable files
 - **Real-time processing** with HTMX
-- **Error handling** for invalid Base64 input
+- **Binary data handling** with proper MIME type detection
+- **Error handling** for invalid Base64 input and oversized files
 - **Clean, intuitive interface**
 
 ### 🎨 **User Interface & Experience**
@@ -60,7 +63,15 @@
   - Our Mission: Making advanced cryptography accessible to everyone
   - Our Expertise: Built by security experts and cryptography specialists  
   - Our Commitment: Continuous innovation and transparency in security
-- **Professional Contact Forms** for enterprise deployment inquiries
+- **Enterprise Contact System** with multiple inquiry types and advanced spam protection
+  - Cloud hosting, on-premise installation, technical support inquiries
+  - Multi-layered spam protection (honeypot, content filtering, rate limiting)
+  - reCAPTCHA v3 integration with score-based verification
+  - Professional email notifications via Resend API
+- **User Feedback & Survey System** for business intelligence
+  - Comprehensive usage analytics and market research
+  - Net Promoter Score (NPS) collection
+  - Feature request tracking and enterprise interest assessment
 - **Smooth Animations** and glassmorphism design effects
 
 ## 🏗️ Architecture
@@ -70,6 +81,16 @@
 cmd/server/          # Application entry point
 internal/
 ├── handlers/        # HTTP request handlers
+│   ├── base64.go    # Base64 encoding/decoding (text & files)
+│   ├── chat.go      # Real-time chat WebSocket handlers
+│   ├── contact.go   # Enterprise contact system with spam protection
+│   ├── encryption.go # Text and file encryption handlers
+│   ├── feedback.go  # User survey and feedback collection
+│   ├── home.go      # Landing page and core template rendering
+│   ├── password.go  # Password generation with strength analysis
+│   ├── sshkey.go    # SSH key generation with multiple algorithms
+│   ├── survey.go    # Survey page template handler
+│   └── view.go      # Encrypted content viewing and validation
 ├── models/          # Data structures
 └── services/        # Business logic
     ├── crypto.go    # Encryption/decryption
@@ -83,11 +104,12 @@ internal/
 ```
 templates/           # HTML templates with responsive design
 ├── index.html      # Landing page with dark mode support
-├── base64.html     # Base64 encoding/decoding tool
+├── base64.html     # Base64 encoding/decoding tool (text & files)
 ├── chat-encryption.html  # Real-time encrypted chat
 ├── file-encryption.html  # File upload and encryption
 ├── password-generator.html  # Password generation tool
 ├── ssh-key.html    # SSH key generation tool
+├── survey.html     # User feedback and survey collection
 └── text-encryption.html   # Text encryption and sharing
 ```
 
@@ -167,12 +189,22 @@ Use a cryptographically secure 32-byte key in production.
 
 ## 🛡️ Security Features
 
+### **Core Cryptography**
 - **AES-256-GCM Encryption**: Military-grade encryption for all data
 - **Zero-Knowledge Architecture**: Server never sees unencrypted data
 - **SHA-256 PIN Hashing**: Secure PIN protection
 - **Automatic Expiration**: Time-based and view-count-based expiry
 - **Secure Random Generation**: Cryptographically secure random number generation
 - **TLS-Ready**: Designed for HTTPS deployment
+
+### **Advanced Spam & Attack Protection**
+- **reCAPTCHA v3 Integration**: Score-based bot detection with intelligent thresholds
+- **Multi-layered Spam Protection**:
+  - Honeypot field detection for automated form submissions
+  - Content-based spam filtering with keyword blacklists
+  - Rate limiting (3 requests per 10-minute window per IP)
+- **Input Validation**: Comprehensive form validation and sanitization
+- **IP Tracking**: Client identification and monitoring for security analysis
 
 ## 🏛️ Security Architecture
 
@@ -306,6 +338,8 @@ CMD ["./zeepass"]
 - `REDIS_URL`: Redis connection string
 - `ENCRYPTION_KEY`: 32-byte encryption key (base64 encoded)
 - `PORT`: Server port (default: 8080)
+- `RESEND_API_KEY`: API key for professional email notifications
+- `RECAPTCHA_SECRET_KEY`: reCAPTCHA v3 secret key for spam protection
 
 ## 🤝 Contributing
 
@@ -334,22 +368,36 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Database**: Redis
 - **Encryption**: AES-256-GCM
 - **WebSockets**: Gorilla WebSocket
+- **Security**: reCAPTCHA v3, Rate Limiting, Spam Protection
+- **Email**: Resend API for professional notifications
 - **Development**: Air (live reloading)
 - **Deployment**: Docker-ready
 
 ## 📊 Project Status
 
+### **Core Features**
 - ✅ **Text Encryption** - Complete
 - ✅ **File Encryption** - Complete  
 - ✅ **Chat Encryption** - Complete
 - ✅ **Password Generator** - Complete
 - ✅ **SSH Key Generator** - Complete
-- ✅ **Base64 Tools** - Complete
+- ✅ **Base64 Tools** (Text & Files) - Complete
 - ✅ **Dark/Light Theme** - Complete
 - ✅ **Responsive Design** - Complete
+
+### **Business & Security Features**
+- ✅ **Enterprise Contact System** - Complete
+- ✅ **User Feedback & Survey System** - Complete
+- ✅ **Advanced Spam Protection** - Complete
+- ✅ **reCAPTCHA v3 Integration** - Complete
+- ✅ **Professional Email Integration** - Complete
+- ✅ **Rate Limiting & IP Tracking** - Complete
+
+### **Upcoming Features**
 - 🔄 **User Authentication** - Planned
 - 🔄 **API Endpoints** - Planned
 - 🔄 **Mobile App** - Planned
+- 🔄 **Analytics Dashboard** - Planned
 
 ---
 
