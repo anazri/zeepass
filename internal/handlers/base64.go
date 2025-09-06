@@ -7,9 +7,19 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/anazri/zeepass/internal/models"
 )
+
+// createPageData creates a PageData struct with common fields populated
+func createPageData(title string) models.PageData {
+	return models.PageData{
+		Title:                   title,
+		RecaptchaSiteKey:        os.Getenv("RECAPTCHA_SITE_KEY"),
+		CloudflareAnalyticsToken: os.Getenv("CLOUDFLARE_ANALYTICS_TOKEN"),
+	}
+}
 
 func Base64Handler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/base64.html")
@@ -19,9 +29,7 @@ func Base64Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.PageData{
-		Title: "Base64 - ZeePass",
-	}
+	data := createPageData("Base64 - ZeePass")
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
