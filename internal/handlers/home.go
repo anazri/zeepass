@@ -4,19 +4,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
-
-	"github.com/anazri/zeepass/internal/models"
 )
 
-// createPageData creates a PageData struct with common fields populated
-func createPageData(title string) models.PageData {
-	return models.PageData{
-		Title:                   title,
-		RecaptchaSiteKey:        os.Getenv("RECAPTCHA_SITE_KEY"),
-		CloudflareAnalyticsToken: os.Getenv("CLOUDFLARE_ANALYTICS_TOKEN"),
-	}
-}
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/index.html")
