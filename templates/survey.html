@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
     {{if .CloudflareAnalyticsToken}}
-    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "{{.CloudflareAnalyticsToken}}"}'></script><!-- End Cloudflare Web Analytics -->
+    <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "{{.CloudflareAnalyticsToken}}"}'></script><!-- End Cloudflare Web Analytics -->
     {{end}}
     
     <script>

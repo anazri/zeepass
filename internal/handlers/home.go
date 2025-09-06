@@ -9,6 +9,15 @@ import (
 	"github.com/anazri/zeepass/internal/models"
 )
 
+// createPageData creates a PageData struct with common fields populated
+func createPageData(title string) models.PageData {
+	return models.PageData{
+		Title:                   title,
+		RecaptchaSiteKey:        os.Getenv("RECAPTCHA_SITE_KEY"),
+		CloudflareAnalyticsToken: os.Getenv("CLOUDFLARE_ANALYTICS_TOKEN"),
+	}
+}
+
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/index.html")
 	if err != nil {
@@ -17,10 +26,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.PageData{
-		Title:           "ZeePass - Encrypt your data easily",
-		RecaptchaSiteKey: os.Getenv("RECAPTCHA_SITE_KEY"),
-	}
+	data := createPageData("ZeePass - Encrypt your data easily")
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
@@ -36,9 +42,7 @@ func TextEncryptionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.PageData{
-		Title: "Text Encryption - ZeePass",
-	}
+	data := createPageData("Text Encryption - ZeePass")
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
@@ -54,9 +58,7 @@ func FileEncryptionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.PageData{
-		Title: "File Encryption - ZeePass",
-	}
+	data := createPageData("File Encryption - ZeePass")
 
 	err = tmpl.Execute(w, data)
 	if err != nil {

@@ -3,8 +3,9 @@ package models
 import "time"
 
 type PageData struct {
-	Title           string
-	RecaptchaSiteKey string
+	Title                   string
+	RecaptchaSiteKey        string
+	CloudflareAnalyticsToken string
 }
 
 type EncryptedData struct {

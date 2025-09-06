@@ -5,10 +5,20 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/anazri/zeepass/internal/models"
 	"github.com/anazri/zeepass/internal/services"
 )
+
+// createPageData creates a PageData struct with common fields populated
+func createPageData(title string) models.PageData {
+	return models.PageData{
+		Title:                   title,
+		RecaptchaSiteKey:        os.Getenv("RECAPTCHA_SITE_KEY"),
+		CloudflareAnalyticsToken: os.Getenv("CLOUDFLARE_ANALYTICS_TOKEN"),
+	}
+}
 
 func SSHKeyHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/ssh-key.html")
@@ -18,9 +28,7 @@ func SSHKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.PageData{
-		Title: "SSH Key - ZeePass",
-	}
+	data := createPageData("SSH Key - ZeePass")
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
