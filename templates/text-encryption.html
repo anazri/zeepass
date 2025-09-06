@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script>
     
     {{if .CloudflareAnalyticsToken}}
-    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "{{.CloudflareAnalyticsToken}}"}'></script><!-- End Cloudflare Web Analytics -->
+    <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "{{.CloudflareAnalyticsToken}}"}'></script><!-- End Cloudflare Web Analytics -->
     {{end}}
     
     <script>
