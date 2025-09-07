@@ -42,6 +42,10 @@ COPY --from=builder /app/zeepass .
 # Copy templates
 COPY --from=builder /app/templates ./templates
 
+# Copy SEO files
+COPY --from=builder /app/sitemap.xml .
+COPY --from=builder /app/robots.txt .
+
 # Create data directory and change ownership to non-root user
 RUN mkdir -p /app/data && \
     chown -R zeepass:zeepass /app
