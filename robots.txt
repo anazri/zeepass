@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow viewing encrypted content links from crawlers
+Disallow: /view/
+Disallow: /view-file/
+
+# Sitemap location
+Sitemap: https://zeepass.com/sitemap.xml

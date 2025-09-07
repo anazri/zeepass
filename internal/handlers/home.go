@@ -58,3 +58,13 @@ func FileEncryptionHandler(w http.ResponseWriter, r *http.Request) {
 func StaticHandler(w http.ResponseWriter, r *http.Request) {
 	http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))).ServeHTTP(w, r)
 }
+
+func SitemapHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/xml")
+	http.ServeFile(w, r, "sitemap.xml")
+}
+
+func RobotsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	http.ServeFile(w, r, "robots.txt")
+}
