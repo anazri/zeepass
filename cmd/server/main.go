@@ -30,6 +30,8 @@ func main() {
 	http.HandleFunc("/contact", handlers.HandleContact)
 	http.HandleFunc("/survey", handlers.SurveyHandler)
 	http.HandleFunc("/feedback", handlers.HandleFeedback)
+	http.HandleFunc("/sitemap.xml", handlers.SitemapHandler)
+	http.HandleFunc("/robots.txt", handlers.RobotsHandler)
 	http.HandleFunc("/static/", handlers.StaticHandler)
 
 	log.Println("ZeePass server starting on :8080")
