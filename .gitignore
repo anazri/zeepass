@@ -1,2 +1,6 @@
 .idea/
 tmp/main
+
+# SEO documentation files
+SEO_IMPLEMENTATION.md
+seo.todo
