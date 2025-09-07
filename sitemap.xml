@@ -2,49 +2,49 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://zeepass.com/</loc>
-    <lastmod>2025-01-07</lastmod>
+    <lastmod>2025-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://zeepass.com/text-encryption</loc>
-    <lastmod>2025-01-07</lastmod>
+    <lastmod>2025-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://zeepass.com/file-encryption</loc>
-    <lastmod>2025-01-07</lastmod>
+    <lastmod>2025-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://zeepass.com/chat-encryption</loc>
-    <lastmod>2025-01-07</lastmod>
+    <lastmod>2025-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://zeepass.com/password-generator</loc>
-    <lastmod>2025-01-07</lastmod>
+    <lastmod>2025-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://zeepass.com/ssh-key</loc>
-    <lastmod>2025-01-07</lastmod>
+    <lastmod>2025-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://zeepass.com/base64</loc>
-    <lastmod>2025-01-07</lastmod>
+    <lastmod>2025-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://zeepass.com/survey</loc>
-    <lastmod>2025-01-07</lastmod>
+    <lastmod>2025-09-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
