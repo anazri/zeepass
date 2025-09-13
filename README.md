@@ -394,6 +394,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **Rate Limiting & IP Tracking** - Complete
 
 ### **Upcoming Features**
+
+#### **Advanced Crypto Tools**
+- 🔄 **PGP/GPG Key Tools** - Generate/import/export OpenPGP keys, encrypt/decrypt/sign messages/files with PGP
+- 🔄 **JWT (JSON Web Token) Tools** - Encode/decode/verify JWTs, sign with HS256/RS256/ES256/EdDSA
+- 🔄 **Hashing Tools** - Compute SHA-256, SHA-512, BLAKE2, Argon2, MD5 for integrity checks and password hashing
+- 🔄 **QR Code Crypto** - Generate QR codes for encrypted messages, passwords, SSH keys with scan/decrypt functionality
+- 🔄 **Key Derivation Functions (KDFs)** - PBKDF2, scrypt, Argon2 for secure password-to-key generation
+- 🔄 **Digital Signature Tools** - Sign and verify text/files using RSA/ECDSA/Ed25519 for software authenticity
+- 🔄 **Certificate & TLS Tools** - Generate CSRs and self-signed X.509 certificates, inspect SSL/TLS certificates
+- 🔄 **Mnemonic & Wallet Tools** - Generate BIP39 mnemonics, derive HD wallet keys (BIP32/44), export to ETH/BTC formats
+- 🔄 **Steganography Tools** - Hide encrypted text inside images with extraction capabilities
+- 🔄 **Entropy & Randomness Tester** - Generate cryptographically secure random numbers with entropy visualization
+
+#### **Platform Features**
 - 🔄 **User Authentication** - Planned
 - 🔄 **API Endpoints** - Planned
 - 🔄 **Mobile App** - Planned
